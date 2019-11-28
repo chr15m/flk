@@ -1,0 +1,3 @@
+[submodule "mal"]
+	path = mal
+	url = https://github.com/kanaka/mal.git
