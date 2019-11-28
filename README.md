@@ -83,3 +83,14 @@ It's bash. Try `(seq "somestring")`.
 ### How do I do destructuring?
 
 You can't.
+
+### Why is it called Fleck?
+
+At 36k and running on any machine with Bash, the name seemed appropriate.
+
+```
+ fleck
+
+    n. A tiny mark or spot.
+    n. A small bit or flake.
+```
