@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Downloading Fleck binary 'flk' into the current directory."
+curl -s https://chr15m.github.io/flk/flk > flk && chmod 755 flk && ./flk

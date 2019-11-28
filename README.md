@@ -1,14 +1,13 @@
 <p align="center">
-  <img src="img/wordmark.svg?sanitize=true" alt="Fleck wordmark"><br/>
+  <img src="doc/wordmark.svg?sanitize=true" alt="Fleck wordmark"><br/>
   Fleck is a Clojure-like LISP that runs wherever Bash does.
 </p>
-
 
 ```shell
 curl https://chr15m.github.io/flk/get | sh
 ```
 
-<p align="center"><img src="img/screencast.svg?sanitize=true" alt="Fleck screencast"></p>
+<p align="center"><img src="doc/screencast.svg?sanitize=true" alt="Fleck screencast"></p>
 
 ### [Install](#install) | [Examples](./examples) | [FAQ](#faq)
 
@@ -23,11 +22,10 @@ Run the one-liner above, or:
 # What?
 
 ```
-$ echo '(println "Hello world!") (println "Hostname:" (sh* "hostname")) (println (sh* "uptime"))' > example.clj
+$ echo '(println "Hello world!") (println "Hostname:" (sh* "hostname")))' > example.clj
 $ ./flk example.clj
 Hello world!
 Hostname: diziet
-13:58:07 up 15 days,  5:52,  3 users,  load average: 0.11, 0.12, 0.09
 ```
 
 # Why?
