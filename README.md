@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="doc/wordmark.svg?sanitize=true" alt="Fleck wordmark"><br/>
+  <img src="docs/wordmark.svg?sanitize=true" alt="Fleck wordmark"><br/>
   Fleck is a Clojure-like LISP that runs wherever Bash does.
 </p>
 
@@ -7,7 +7,7 @@
 curl https://chr15m.github.io/flk/get | sh
 ```
 
-<p align="center"><img src="doc/screencast.svg?sanitize=true" alt="Fleck screencast"></p>
+<p align="center"><img src="docs/screencast.svg?sanitize=true" alt="Fleck screencast"></p>
 
 ### [Install](#install) | [Examples](./examples) | [FAQ](#faq)
 

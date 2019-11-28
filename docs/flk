@@ -1,0 +1,1511 @@
+#!/usr/bin/env bash
+#
+# mal (Make a Lisp) object types
+#
+
+if [ -z "${__mal_types_included__}" ]; then
+__mal_types_included=true
+
+declare -A ANON
+
+__obj_magic=__5bal7
+__keyw=$(echo -en "\xCA\x9E") # \u029E
+__obj_hash_code=${__obj_hash_code:-0}
+
+__new_obj_hash_code () {
+    __obj_hash_code=$(( __obj_hash_code + 1))
+    r="${__obj_hash_code}"
+}
+
+__new_obj () {
+    __new_obj_hash_code
+    r="${1}_${r}"
+}
+
+__new_obj_like () {
+    __new_obj_hash_code
+    r="${1%_*}_${r}"
+}
+
+
+# Errors/Exceptions
+
+__ERROR=
+_error() {
+    _string "${1}"
+    __ERROR="${r}"
+    r=
+}
+
+
+
+#
+# General functions
+#
+
+# Return the type of the object (or "make" if it's not a object
+_obj_type () {
+    local type="${1:0:4}"
+    r=
+    case "${type}" in
+        symb) r="symbol" ;;
+        list) r="list" ;;
+        numb) r="number" ;;
+        func) r="function" ;;
+        strn)
+            local s="${ANON["${1}"]}"
+            if [[ "${1:0:1}" = "${__keyw}" ]] \
+                || [[ "${1:0:2}" = "${__keyw}" ]]; then
+                r="keyword"
+            else
+                r="string"
+            fi ;;
+        _nil) r="nil" ;;
+        true) r="true" ;;
+        fals) r="false" ;;
+        vect) r="vector" ;;
+        hmap) r="hash_map" ;;
+        atom) r="atom" ;;
+        undf) r="undefined" ;;
+        *)    r="bash" ;;
+    esac
+}
+
+_equal? () {
+    _obj_type "${1}"; local ot1="${r}"
+    _obj_type "${2}"; local ot2="${r}"
+    if [[ "${ot1}" != "${ot2}" ]]; then
+        if ! _sequential? "${1}" || ! _sequential? "${2}"; then
+            return 1
+        fi
+    fi
+    case "${ot1}" in
+    string|symbol|keyword|number)
+        [[ "${ANON["${1}"]}" == "${ANON["${2}"]}" ]] ;;
+    list|vector)
+        _count "${1}"; local sz1="${r}"
+        _count "${2}"; local sz2="${r}"
+        [[ "${sz1}" == "${sz2}" ]] || return 1
+        local a1=(${ANON["${1}"]})
+        local a2=(${ANON["${2}"]})
+        for ((i=0;i<${#a1[*]};i++)); do
+            _equal? "${a1[${i}]}" "${a2[${i}]}" || return 1
+        done
+        ;;
+    hash_map)
+        local hm1="${ANON["${1}"]}"
+        eval local ks1="\${!${hm1}[@]}"
+        local hm2="${ANON["${2}"]}"
+        eval local ks2="\${!${hm2}[@]}"
+        [[ "${#ks1}" == "${#ks2}" ]] || return 1
+        for k in ${ks1}; do
+            eval v1="\${${hm1}[\"${k}\"]}"
+            eval v2="\${${hm2}[\"${k}\"]}"
+            [ "${v1}" ] || return 1
+            [ "${v2}" ] || return 1
+            _equal? "${v1}" "${v2}" || return 1
+        done
+        ;;
+    *)
+        [[ "${1}" == "${2}" ]] ;;
+    esac
+}
+
+# Constant atomic values
+
+__nil=_nil_0
+__true=true_0
+__false=fals_0
+
+_nil? () { [[ ${1} =~ ^_nil_ ]]; }
+_true? () { [[ ${1} =~ ^true_ ]]; }
+_false? () { [[ ${1} =~ ^fals_ ]]; }
+
+
+# Symbols
+
+_symbol () {
+    __new_obj_hash_code
+    r="symb_${r}"
+    ANON["${r}"]="${1//\*/__STAR__}"
+}
+_symbol? () { [[ ${1} =~ ^symb_ ]]; }
+
+
+# Keywords
+
+_keyword () {
+    local k="${1}"
+    __new_obj_hash_code
+    r="strn_${r}"
+    if [[ "${1:0:1}" = "${__keyw}" ]] \
+        || [[ "${1:0:2}" = "${__keyw}" ]]; then
+        true
+    else
+        k="${__keyw}${1}"
+    fi
+    ANON["${r}"]="${k//\*/__STAR__}"
+}
+_keyword? () {
+    [[ ${1} =~ ^strn_ ]] || return 1
+    local s="${ANON["${1}"]}"
+    [[ "${s:0:1}" = "${__keyw}" ]] || [[ "${s:0:2}" = "${__keyw}" ]]
+}
+
+
+# Numbers
+
+_number () {
+    __new_obj_hash_code
+    r="numb_${r}"
+    ANON["${r}"]="${1}"
+}
+_number? () { [[ ${1} =~ ^numb_ ]]; }
+
+
+# Strings
+
+_string () {
+    __new_obj_hash_code
+    r="strn_${r}"
+    ANON["${r}"]="${1//\*/__STAR__}"
+}
+_string? () { [[ ${1} =~ ^strn_ ]]; }
+
+
+# Functions
+# Return a function object. The first parameter is the
+# function 'source'.
+_function () {
+    __new_obj_hash_code
+    eval "function ${__obj_magic}_func_${r} () { ${1%;} ; }"
+    r="func_${r}"
+    if [[ "${2}" ]]; then
+        # Native function
+        ANON["${r}"]="${__obj_magic}_${r}@${2}@${3}@${4}"
+    else
+        # Bash function
+        ANON["${r}"]="${__obj_magic}_${r}"
+    fi
+}
+_function? () { [[ ${1} =~ ^func_ ]]; }
+
+
+# Lists
+
+_list () {
+    __new_obj_hash_code
+    r="list_${r}"
+    ANON["${r}"]="${*}"
+}
+_list? () { [[ ${1} =~ ^list_ ]]; }
+
+
+# Vectors
+
+_vector () {
+    __new_obj_hash_code
+    r="vector_${r}"
+    ANON["${r}"]="${*}"
+}
+_vector? () { [[ ${1} =~ ^vector_ ]]; }
+
+
+# hash maps (associative arrays)
+
+_hash_map () {
+    __new_obj_hash_code
+    local name="hmap_${r}"
+    local obj="${__obj_magic}_${name}"
+    declare -A -g ${obj}; eval "${obj}=()"
+    ANON["${name}"]="${obj}"
+
+    while [[ "${1}" ]]; do
+        eval ${obj}[\"${ANON["${1}"]}\"]=\"${2}\"
+        shift; shift
+    done
+
+    r="${name}"
+}
+_hash_map? () { [[ ${1} =~ ^hmap_ ]]; }
+
+_contains? () {
+    local obj="${ANON["${1}"]}"
+    eval [[ "\${${obj}[\"${2}\"]+isset}" ]]
+}
+
+_copy_hash_map () {
+    local orig_obj="${ANON["${1}"]}"
+    _hash_map
+    local name="${r}"
+    local obj="${ANON["${name}"]}"
+
+    # Copy the existing key/values to the new object
+    local temp=$(typeset -p ${orig_obj})
+    eval ${temp/#declare -A ${orig_obj}=/declare -A -g ${obj}=}
+    r="${name}"
+}
+
+# Return same hash map with keys/values added/mutated in place
+_assoc! () {
+    local obj=${ANON["${1}"]}; shift
+    declare -A -g ${obj}
+
+    # Set the key/values specified
+    while [[ "${1}" ]]; do
+        eval ${obj}[\"${1}\"]=\"${2}\"
+        shift; shift
+    done
+}
+
+# Return same hash map with keys/values deleted/mutated in place
+_dissoc! () {
+    local obj=${ANON["${1}"]}; shift
+    declare -A -g ${obj}
+
+    # Delete the key/values specified
+    while [[ "${1}" ]]; do
+        eval unset ${obj}[\"${1}\"]
+        shift
+    done
+}
+
+
+# Atoms
+
+_atom() {
+    __new_obj_hash_code
+    r="atom_${r}"
+    ANON["${r}"]="${*}"
+}
+_atom? () { [[ ${1} =~ ^atom_ ]]; }
+
+
+# sequence operations
+
+_sequential? () {
+    _list? "${1}" || _vector? "${1}"
+}
+
+_nth () {
+    local temp=(${ANON["${1}"]})
+    r="${temp[${2}]}"
+}
+
+_first () {
+    local temp="${ANON["${1}"]}"
+    r="${temp%% *}"
+    [ "${r}" ] || r="${__nil}"
+}
+
+_last () {
+    local temp="${ANON["${1}"]}"
+    r="${temp##* }"
+}
+
+# Creates a new vector/list of the everything after but the first
+# element
+_rest () {
+    local temp="${ANON["${1}"]}"
+    _list
+    if [[ "${temp#* }" == "${temp}" ]]; then
+        ANON["${r}"]=
+    else
+        ANON["${r}"]="${temp#* }"
+    fi
+}
+
+
+_empty? () { [[ -z "${ANON["${1}"]}" ]]; }
+
+# conj that mutates in place (and always appends)
+_conj! () {
+    local obj="${1}"; shift
+    local obj_data="${ANON["${obj}"]}"
+    ANON["${obj}"]="${obj_data:+${obj_data} }${*}"
+    r="${1}"
+}
+
+
+
+_count () {
+    if _nil? "${1}"; then
+        r="0"
+    else
+        local temp=(${ANON["${1}"]})
+        r=${#temp[*]}
+    fi
+}
+
+# Slice a sequence object $1 starting at $2 of length $3
+_slice () {
+    local temp=(${ANON["${1}"]})
+    __new_obj_like "${1}"
+    ANON["${r}"]="${temp[@]:${2}:${3}}"
+}
+
+# Takes a bash function and an list object and invokes the function on
+# each element of the list, returning a new list (or vector) of the results.
+_map_with_type () {
+    local constructor="${1}"; shift
+    local f="${1}"; shift
+    local items="${ANON["${1}"]}"; shift
+    eval "${constructor}"; local new_seq="${r}"
+    for v in ${items}; do
+        #echo eval ${f%%@*} "${v}" "${@}"
+        eval ${f%%@*} "${v}" "${@}"
+        [[ "${__ERROR}" ]] && r= && return 1
+        _conj! "${new_seq}" "${r}"
+    done
+    r="${new_seq}"
+}
+
+_map () {
+    _map_with_type _list "${@}"
+}
+
+fi
+#
+# mal (Make Lisp) Parser/Reader
+#
+
+if [ -z "${__mal_readerr_included__}" ]; then
+__mal_readerr_included=true
+
+
+READ_ATOM () {
+    local token=${__reader_tokens[${__reader_idx}]}
+    __reader_idx=$(( __reader_idx + 1 ))
+    case "${token}" in
+        [0-9]*)  _number "${token}" ;;
+        -[0-9]*) _number "${token}" ;;
+        \"*)    if [[ ! "${token}" =~ ^\"(\\.|[^\\\"])*\"$ ]]; then
+                    _error "expected '\"', got EOF"
+                    return
+                fi
+                token="${token:1:-1}"
+                token="${token//\\\\/${__keyw}}"
+                token="${token//\\\"/\"}"
+                token="${token//\\n/$'\n'}"
+                token="${token//${__keyw}/\\}"
+                _string "${token}" ;;
+        :*)     _keyword "${token:1}" ;;
+        nil)    r="${__nil}" ;;
+        true)   r="${__true}" ;;
+        false)  r="${__false}" ;;
+        *)      _symbol "${token}" ;;
+    esac
+}
+
+# Return seqence of tokens into r.
+#   ${1}: Type of r (vector, list)
+#   ${2}: starting symbol
+#   ${3}: ending symbol
+READ_SEQ () {
+    local start="${1}"
+    local end="${2}"
+    local items=""
+    local token=${__reader_tokens[${__reader_idx}]}
+    __reader_idx=$(( __reader_idx + 1 ))
+    if [[ "${token}" != "${start}" ]]; then
+        r=
+        _error "expected '${start}'"
+        return
+    fi
+    token=${__reader_tokens[${__reader_idx}]}
+    while [[ "${token}" != "${end}" ]]; do
+        if [[ ! "${token}" ]]; then
+            r=
+            _error "expected '${end}', got EOF"
+            return
+        fi
+        READ_FORM
+        items="${items} ${r}"
+        token=${__reader_tokens[${__reader_idx}]}
+    done
+    __reader_idx=$(( __reader_idx + 1 ))
+    r="${items:1}"
+}
+
+# Return form in r
+READ_FORM () {
+    local token=${__reader_tokens[${__reader_idx}]}
+    case "${token}" in
+        \')     __reader_idx=$(( __reader_idx + 1 ))
+                _symbol quote; local q="${r}"
+                READ_FORM; local f="${r}"
+                _list "${q}" "${f}" ;;
+        \`)     __reader_idx=$(( __reader_idx + 1 ))
+                _symbol quasiquote; local q="${r}"
+                READ_FORM; local f="${r}"
+                _list "${q}" "${f}" ;;
+        \~)     __reader_idx=$(( __reader_idx + 1 ))
+                _symbol unquote; local q="${r}"
+                READ_FORM; local f="${r}"
+                _list "${q}" "${f}" ;;
+        \~\@)   __reader_idx=$(( __reader_idx + 1 ))
+                _symbol splice-unquote; local q="${r}"
+                READ_FORM; local f="${r}"
+                _list "${q}" "${f}" ;;
+        ^)      __reader_idx=$(( __reader_idx + 1 ))
+                _symbol with-meta; local wm="${r}"
+                READ_FORM; local meta="${r}"
+                READ_FORM; local obj="${r}"
+                _list "${wm}" "${obj}" "${meta}" ;;
+        @)     __reader_idx=$(( __reader_idx + 1 ))
+                _symbol deref; local d="${r}"
+                READ_FORM; local f="${r}"
+                _list "${d}" "${f}" ;;
+        \))     _error "unexpected ')'" ;; 
+        \()     READ_SEQ "(" ")"
+                _list ${r} ;;
+        \])     _error "unexpected ']'" ;; 
+        \[)     READ_SEQ "[" "]"
+                _vector ${r} ;;
+        \})     _error "unexpected '}'" ;; 
+        \{)     READ_SEQ "{" "}"
+                _hash_map ${r} ;;
+        *)      READ_ATOM
+    esac
+}
+
+# Returns __reader_tokens as an indexed array of tokens
+TOKENIZE () {
+    local data="${*}"
+    local datalen=${#data}
+    local idx=0
+    local chunk=0
+    local chunksz=500
+    local token=
+    local str=
+
+    __reader_idx=0
+    __reader_tokens=
+    while true; do
+        if (( ${#str} < ( chunksz / 2) )) && (( chunk < datalen )); then
+            str="${str}${data:${chunk}:${chunksz}}"
+            chunk=$(( chunk + ${chunksz} ))
+        fi
+        (( ${#str} == 0 )) && break
+        [[ "${str}" =~ ^^([][{}\(\)^@])|^(~@)|^(\"(\\.|[^\\\"])*\"?)|^(;[^$'\n']*)|^([~\'\`])|^([^][ ~\`\'\";{}\(\)^@\,$'\n']+)|^(,)|^([[:space:]]+) ]]
+        token=${BASH_REMATCH[0]}
+        str="${str:${#token}}"
+        token="${token}"
+        #echo "MATCH: '${token}' / [${str}]"
+        if ! [[ "${token}" =~ (^[,]$|^[[:space:]]*;.*$|^[[:space:]]*$) ]]; then 
+            __reader_tokens[${idx}]="${token}"
+            idx=$(( idx + 1 ))
+        fi
+        if [ -z "${token}" ]; then
+            _error "Tokenizing error at: ${str:0:50}"
+            return 1
+        fi
+    done
+}
+
+# read-str from a raw "string" or from a string object. Retruns object
+# read in r.
+READ_STR () {
+    declare -a __reader_tokens
+    TOKENIZE "${*}" || return 1  # sets __reader_tokens
+    #set | grep ^__reader_tokens
+    if [ -z "${__reader_tokens[0]}" ]; then
+        r=
+        return 1  # No tokens
+    fi
+    READ_FORM
+    #echo "Token: ${r}: <${ANON["${r}"]}>"
+    return
+}
+
+# Call readline and save the history. Returns the string read in r.
+READLINE_EOF=
+READLINE_HISTORY_FILE=${HOME}/.mal-history
+READLINE () {
+    history -r "${READLINE_HISTORY_FILE}" 2>/dev/null || true
+    read -r -e -p "${1}" r || return "$?"
+    history -s -- "${r}"
+    history -a "${READLINE_HISTORY_FILE}" 2>/dev/null || true
+}
+
+fi
+#
+# mal (Make a Lisp) printer
+#
+
+if [ -z "${__mal_printer_included__}" ]; then
+__mal_printer_included=true
+
+
+_pr_str () {
+    local print_readably="${2}"
+    _obj_type "${1}"; local ot="${r}"
+    if [[ -z "${ot}" ]]; then
+        _error "_pr_str failed on '${1}'"
+        r="<${1}>"
+    else
+        eval ${ot}_pr_str "${1}" "${print_readably}"
+    fi
+}
+
+nil_pr_str () { r="nil"; }
+true_pr_str () { r="true"; }
+false_pr_str () { r="false"; }
+
+number_pr_str () { r="${ANON["${1}"]}"; }
+
+symbol_pr_str () {
+    r="${ANON["${1}"]}"
+    r="${r//__STAR__/*}"
+}
+
+keyword_pr_str () {
+    string_pr_str "${1}"
+}
+
+_raw_string_pr_str () {
+    local s="${1}"
+    local print_readably="${2}"
+    if [[ "${s:0:1}" = "${__keyw}" ]]; then
+        r=":${s:1}"
+    elif [[ "${s:0:2}" = "${__keyw}" ]]; then
+        r=":${s:2}"
+    elif [ "${print_readably}" == "yes" ]; then
+        s="${s//\\/\\\\}"
+        s="${s//\"/\\\"}"
+        r="\"${s//$'\n'/\\n}\""
+    else
+        r="${s}"
+    fi
+    r="${r//__STAR__/$'*'}"
+}
+
+string_pr_str () {
+    _raw_string_pr_str "${ANON["${1}"]}" "${2}"
+}
+
+function_pr_str () { r="${ANON["${1}"]}"; }
+
+bash_pr_str () {
+    r="$(declare -f -p ${1})"
+}
+
+hash_map_pr_str () {
+    local print_readably="${2}"
+    local res=""; local val=""
+    local hm="${ANON["${1}"]}"
+    eval local keys="\${!${hm}[@]}"
+    for key in ${keys}; do
+        _raw_string_pr_str "${key}" "${print_readably}"
+        res="${res} ${r}"
+        eval val="\${${hm}[\"${key}\"]}"
+        _pr_str "${val}" "${print_readably}"
+        res="${res} ${r}"
+    done
+    r="{${res:1}}"
+}
+
+vector_pr_str () {
+    local print_readably="${2}"
+    local res=""
+    for elem in ${ANON["${1}"]}; do
+        _pr_str "${elem}" "${print_readably}"
+        res="${res} ${r}"
+    done
+    r="[${res:1}]"
+}
+
+list_pr_str () {
+    local print_readably="${2}"
+    local res=""
+    for elem in ${ANON["${1}"]}; do
+        _pr_str "${elem}" "${print_readably}"
+        res="${res} ${r}"
+    done
+    r="(${res:1})"
+}
+
+atom_pr_str () {
+    local print_readably="${2}"
+    _pr_str "${ANON["${1}"]}" "${print_readably}"
+    r="(atom ${r})";
+}
+
+fi
+#
+# mal (Make a Lisp) environment definition
+#
+
+if [ -z "${__mal_env_included__}" ]; then
+__mal_env_included=true
+
+
+# Any environment is a hash_map with an __outer__ key that refers to
+# a parent environment (or nil)
+ENV () {
+    r=
+    _hash_map
+    local env="${r}"
+    if [[ "${1}" ]]; then
+        outer="${1}"; shift
+        _assoc! "${env}" "__outer__" "${outer}"
+    else
+        _assoc! "${env}" "__outer__" "${__nil}"
+    fi
+    r="${env}"
+
+    if [[ "${1}" && "${@}" ]]; then
+        local binds=(${ANON["${1}"]}); shift
+        local idx=0
+        while [[ "${binds["${idx}"]}" ]]; do
+            local fp="${ANON["${binds["${idx}"]}"]}"
+            if [[ "${fp}" == "&" ]]; then
+                idx=$(( idx + 1 ))
+                fp="${ANON["${binds["${idx}"]}"]}"
+                _list "${@}"
+                _assoc! "${env}" "${fp}" "${r}"
+                break
+            else
+                _assoc! "${env}" "${fp}" "${1}"
+                shift
+                idx=$(( idx + 1 ))
+            fi
+        done
+    fi
+    r="${env}"
+}
+
+# Find the environment with the key set and return the environment
+ENV_FIND () {
+    if _contains? "${1}" "${ANON["${2}"]}"; then
+        r="${1}"
+    else
+        local obj="${ANON["${1}"]}"
+        eval local outer="\${${obj}["__outer__"]}"
+        if [[ "${outer}" && "${outer}" != "${__nil}" ]]; then
+            ENV_FIND "${outer}" "${2}"
+        else
+            r=
+        fi
+    fi
+}
+
+# Find the environment with the key set and return the value of the
+# key in that environment. If no environment contains the key then
+# return an error
+ENV_GET () {
+    ENV_FIND "${1}" "${2}"
+    local env="${r}"
+    local key="${ANON["${2}"]}"
+    if [[ "${r}" ]]; then
+        local obj="${ANON["${env}"]}"
+        eval r="\${${obj}["${key}"]}"
+    else
+        _error "'${key}' not found"
+    fi
+}
+
+ENV_SET () {
+    local key="${ANON["${2}"]}"
+    _assoc! "${1}" "${key}" "${3}"
+}
+
+fi
+#
+# mal (Make a Lisp) object types
+#
+
+if [ -z "${__mal_core_included__}" ]; then
+__mal_core_included=true
+
+
+# Exceptions/Errors
+
+throw() {
+    __ERROR="${1}"
+    r=
+}
+
+
+# General functions
+
+obj_type () {
+    _obj_type "${1}"
+    _string "${r}"
+}
+
+equal? () {
+    _equal? "${1}" "${2}" && r="${__true}" || r="${__false}"
+}
+
+
+# Scalar functions
+
+nil? () { _nil? "${1}" && r="${__true}" || r="${__false}"; }
+true? () { _true? "${1}" && r="${__true}" || r="${__false}"; }
+false? () { _false? "${1}" && r="${__true}" || r="${__false}"; }
+
+
+# Symbol functions
+
+symbol () { _symbol "${ANON["${1}"]}"; }
+
+symbol? () { _symbol? "${1}" && r="${__true}" || r="${__false}"; }
+
+
+# Keyword functions
+
+keyword () { _keyword "${ANON["${1}"]}"; }
+
+keyword? () { _keyword? "${1}" && r="${__true}" || r="${__false}"; }
+
+
+# Number functions
+
+number? () { _number? "${1}" && r="${__true}" || r="${__false}"; }
+
+num_plus     () { r=$(( ${ANON["${1}"]} + ${ANON["${2}"]} )); _number "${r}"; }
+num_minus    () { r=$(( ${ANON["${1}"]} - ${ANON["${2}"]} )); _number "${r}"; }
+num_multiply () { r=$(( ${ANON["${1}"]} * ${ANON["${2}"]} )); _number "${r}"; }
+num_divide   () { r=$(( ${ANON["${1}"]} / ${ANON["${2}"]} )); _number "${r}"; }
+
+_num_bool     () { [[ "${1}" = "1" ]] && r="${__true}" || r="${__false}"; }
+num_gt       () { r=$(( ${ANON["${1}"]} >  ${ANON["${2}"]} )); _num_bool "${r}"; }
+num_gte      () { r=$(( ${ANON["${1}"]} >= ${ANON["${2}"]} )); _num_bool "${r}"; }
+num_lt       () { r=$(( ${ANON["${1}"]} <  ${ANON["${2}"]} )); _num_bool "${r}"; }
+num_lte      () { r=$(( ${ANON["${1}"]} <= ${ANON["${2}"]} )); _num_bool "${r}"; }
+
+# return number of milliseconds since epoch
+time_ms () {
+    local ms=$(date +%s%3N)
+    _number "${ms}"
+}
+
+
+# String functions
+
+string? () { _string? "${1}" && ( ! _keyword? "${1}" ) && r="${__true}" || r="${__false}"; }
+
+pr_str () {
+    local res=""
+    for x in "${@}"; do _pr_str "${x}" yes; res="${res} ${r}"; done
+    _string "${res:1}"
+}
+
+str () {
+    local res=""
+    for x in "${@}"; do _pr_str "${x}"; res="${res}${r}"; done
+    _string "${res}"
+}
+
+prn () {
+    local res=""
+    for x in "${@}"; do _pr_str "${x}" yes; res="${res} ${r}"; done
+    echo "${res:1}"
+    r="${__nil}";
+}
+
+println () {
+    local res=""
+    for x in "${@}"; do _pr_str "${x}"; res="${res} ${r}"; done
+    echo "${res:1}"
+    r="${__nil}";
+}
+
+readline () {
+    READLINE "${ANON["${1}"]}" && _string "${r}" || r="${__nil}"
+}
+
+read_string () {
+    READ_STR "${ANON["${1}"]}"
+}
+
+slurp () {
+    local lines
+    mapfile lines < "${ANON["${1}"]}"
+    local text="${lines[*]}"; text=${text//$'\n' /$'\n'}
+    _string "${text}"
+}
+
+
+# Function functions
+function? () { _function? "${1}" && [ -z "${ANON["${1}_ismacro_"]}" ] && r="${__true}" || r="${__false}"; }
+macro? () { _function? "${1}" && [ "${ANON["${1}_ismacro_"]}" ] && r="${__true}" || r="${__false}"; }
+
+
+# List functions
+list? () { _list? "${1}" && r="${__true}" || r="${__false}"; }
+
+
+# Vector functions (same as lists for now)
+vector? () { _vector? "${1}" && r="${__true}" || r="${__false}"; }
+
+
+# Hash map (associative array) functions
+hash_map? () { _hash_map? "${1}" && r="${__true}" || r="${__false}"; }
+
+# Return new hash map with keys/values updated
+assoc () {
+    if ! _hash_map? "${1}"; then
+        _error "assoc onto non-hash-map"
+        return
+    fi
+    _copy_hash_map "${1}"; shift
+    local name="${r}"
+    local obj=${ANON["${name}"]}
+    declare -A -g ${obj}
+
+    while [[ "${1}" ]]; do
+        eval ${obj}[\"${ANON["${1}"]}\"]=\"${2}\"
+        shift; shift
+    done
+    r="${name}"
+}
+
+dissoc () {
+    if ! _hash_map? "${1}"; then
+        _error "dissoc from non-hash-map"
+        return
+    fi
+    _copy_hash_map "${1}"; shift
+    local name="${r}"
+    local obj=${ANON["${name}"]}
+    declare -A -g ${obj}
+
+    while [[ "${1}" ]]; do
+        eval unset ${obj}[\"${ANON["${1}"]}\"]
+        shift
+    done
+    r="${name}"
+}
+
+_get () {
+    _obj_type "${1}"; local ot="${r}"
+    case "${ot}" in
+    hash_map)
+        local obj="${ANON["${1}"]}"
+        eval r="\${${obj}[\"${2}\"]}" ;;
+    list|vector)
+        _nth "${1}" "${2}" ;;
+    nil)
+        r="${__nil}" ;;
+    esac
+}
+get () {
+    _get "${1}" "${ANON["${2}"]}"
+    [[ "${r}" ]] || r="${__nil}"
+}
+
+contains? () { _contains? "${1}" "${ANON["${2}"]}" && r="${__true}" || r="${__false}"; }
+
+keys () {
+    local obj="${ANON["${1}"]}"
+    local kstrs=
+    eval local keys="\${!${obj}[@]}"
+    for k in ${keys}; do
+        _string "${k}"
+        kstrs="${kstrs} ${r}"
+    done
+
+    __new_obj_hash_code
+    r="list_${r}"
+    ANON["${r}"]="${kstrs:1}"
+}
+
+vals () {
+    local obj="${ANON["${1}"]}"
+    local kvals=
+    local val=
+    eval local keys="\${!${obj}[@]}"
+    for k in ${keys}; do
+        eval val="\${${obj}["\${k}"]}"
+        kvals="${kvals} ${val}"
+    done
+
+    __new_obj_hash_code
+    r="list_${r}"
+    ANON["${r}"]="${kvals:1}"
+}
+
+
+# sequence operations
+
+sequential? () {
+    _sequential? "${1}" && r="${__true}" || r="${__false}"
+}
+
+cons () {
+    _list ${1} ${ANON["${2}"]}
+}
+
+concat () {
+    _list
+    local acc=""
+    for item in "${@}"; do
+        acc="${acc} ${ANON["${item}"]}"
+    done
+    ANON["${r}"]="${acc:1}"
+}
+
+nth () {
+    _nth "${1}" "${ANON["${2}"]}"
+    if [ -z "${r}" ]; then
+        _error "nth: index out of bounds"
+        return
+    fi
+}
+
+empty? () { _empty? "${1}" && r="${__true}" || r="${__false}"; }
+
+count () {
+    _count "${1}"
+    _number "${r}"
+}
+
+apply () {
+    local f="${ANON["${1}"]}"; shift
+    local items="${@:1:$(( ${#@} -1 ))} ${ANON["${!#}"]}"
+    eval ${f%%@*} ${items}
+}
+
+# Takes a function object and an list object and invokes the function
+# on each element of the list, returning a new list of the results.
+map () {
+    local f="${ANON["${1}"]}"; shift
+    #echo _map "${f}" "${@}"
+    _map "${f}" "${@}"
+}
+
+conj () {
+    local obj="${1}"; shift
+    local obj_data="${ANON["${obj}"]}"
+    __new_obj_like "${obj}"
+    if _list? "${obj}"; then
+        ANON["${r}"]="${obj_data:+${obj_data}}"
+        for elem in ${@}; do
+            ANON["${r}"]="${elem} ${ANON["${r}"]}"
+        done
+
+    else
+        ANON["${r}"]="${obj_data:+${obj_data} }${*}"
+    fi
+}
+
+seq () {
+    local obj="${1}"; shift
+    local obj_data="${ANON["${obj}"]}"
+
+
+    if _list? "${obj}"; then
+        _count "${obj}"
+        if [ "${r}" -eq 0 ]; then r="${__nil}"; return; fi
+        r="${obj}"
+    elif _vector? "${obj}"; then
+        _count "${obj}"
+        if [ "${r}" -eq 0 ]; then r="${__nil}"; return; fi
+        __new_obj_hash_code
+        r="list_${r}"
+        ANON["${r}"]="${obj_data}"
+    elif _string? "${obj}"; then
+        if [ "${#obj_data}" -eq 0 ]; then r="${__nil}"; return; fi
+        local i=0 acc=""
+        for (( i=0; i < ${#obj_data}; i++ )); do
+            _string "${obj_data:$i:1}"
+            acc="${acc} ${r}"
+        done
+        _list
+        ANON["${r}"]="${acc:1}"
+    elif _nil? "${obj}"; then
+        r="${__nil}"
+    else
+        throw "seq: called on non-sequence"
+    fi
+}
+
+
+# Metadata functions
+
+with_meta () {
+    local obj="${1}"; shift
+    local meta_data="${1}"; shift
+    __new_obj_like "${obj}"
+    ANON["${r}"]="${ANON["${obj}"]}"
+    local meta_obj="meta_${r#*_}"
+    ANON["${meta_obj}"]="${meta_data}"
+}
+
+meta () {
+    r="${ANON["meta_${1#*_}"]}"
+    [[ "${r}" ]] || r="${__nil}"
+}
+
+
+# Atom functions
+
+atom? () { _atom? "${1}" && r="${__true}" || r="${__false}"; }
+deref () {
+    # TODO: double-check atom type
+    r=${ANON["${1}"]}
+}
+reset_BANG () {
+    local atm="${1}"; shift
+    ANON["${atm}"]="${*}"
+    r="${*}"
+}
+swap_BANG () {
+    local atm="${1}"; shift
+    local f="${ANON["${1}"]}"; shift
+    ${f%%@*} "${ANON["${atm}"]}" "${@}"
+    ANON["${atm}"]="${r}"
+}
+
+
+
+# Namespace of core functions
+
+declare -A core_ns=(
+    [type]=obj_type
+    [=]=equal?
+    [throw]=throw
+    [nil?]=nil?
+    [true?]=true?
+    [false?]=false?
+    [string?]=string?
+    [symbol]=symbol
+    [symbol?]=symbol?
+    [keyword]=keyword
+    [keyword?]=keyword?
+    [number?]=number?
+    [fn?]=function?
+    [macro?]=macro?
+
+    [pr-str]=pr_str
+    [str]=str
+    [prn]=prn
+    [println]=println
+    [readline]=readline
+    [read-string]=read_string
+    [slurp]=slurp
+    [<]=num_lt
+    [<=]=num_lte
+    [>]=num_gt
+    [>=]=num_gte
+    [+]=num_plus
+    [-]=num_minus
+    [__STAR__]=num_multiply
+    [/]=num_divide
+    [time-ms]=time_ms
+
+    [list]=_list
+    [list?]=list?
+    [vector]=_vector
+    [vector?]=vector?
+    [hash-map]=_hash_map
+    [map?]=hash_map?
+    [assoc]=assoc
+    [dissoc]=dissoc
+    [get]=get
+    [contains?]=contains?
+    [keys]=keys
+    [vals]=vals
+
+    [sequential?]=sequential?
+    [cons]=cons
+    [concat]=concat
+    [nth]=nth
+    [first]=_first
+    [rest]=_rest
+    [empty?]=empty?
+    [count]=count
+    [apply]=apply
+    [map]=map
+
+    [conj]=conj
+    [seq]=seq
+
+    [with-meta]=with_meta
+    [meta]=meta
+    [atom]=_atom
+    [atom?]=atom?
+    [deref]=deref
+    [reset!]=reset_BANG
+    [swap!]=swap_BANG)
+
+fi
+#!/usr/bin/env bash
+
+
+# read
+READ () {
+    [ "${1}" ] && r="${1}" || READLINE
+    READ_STR "${r}"
+}
+
+# eval
+IS_PAIR () {
+    if _sequential? "${1}"; then
+        _count "${1}"
+        [[ "${r}" > 0 ]] && return 0
+    fi
+    return 1
+}
+
+QUASIQUOTE () {
+    if ! IS_PAIR "${1}"; then
+        _symbol quote
+        _list "${r}" "${1}"
+        return
+    else
+        _nth "${1}" 0; local a0="${r}"
+        if [[ "${ANON["${a0}"]}" == "unquote" ]]; then
+            _nth "${1}" 1
+            return
+        elif IS_PAIR "${a0}"; then
+            _nth "${a0}" 0; local a00="${r}"
+            if [[ "${ANON["${a00}"]}" == "splice-unquote" ]]; then
+                _symbol concat; local a="${r}"
+                _nth "${a0}" 1; local b="${r}"
+                _rest "${1}"
+                QUASIQUOTE "${r}"; local c="${r}"
+                _list "${a}" "${b}" "${c}"
+                return
+            fi
+        fi
+    fi
+    _symbol cons; local a="${r}"
+    QUASIQUOTE "${a0}"; local b="${r}"
+    _rest "${1}"
+    QUASIQUOTE "${r}"; local c="${r}"
+    _list "${a}" "${b}" "${c}"
+    return
+}
+
+IS_MACRO_CALL () {
+    if ! _list? "${1}"; then return 1; fi
+    _nth "${1}" 0; local a0="${r}"
+    if _symbol? "${a0}"; then
+        ENV_FIND "${2}" "${a0}"
+        if [[ "${r}" ]]; then
+            ENV_GET "${2}" "${a0}"
+            [ "${ANON["${r}_ismacro_"]}" ]
+            return $?
+        fi
+    fi
+    return 1
+}
+
+MACROEXPAND () {
+    local ast="${1}" env="${2}"
+    while IS_MACRO_CALL "${ast}" "${env}"; do
+        _nth "${ast}" 0; local a0="${r}"
+        ENV_GET "${env}" "${a0}"; local mac="${ANON["${r}"]}"
+        _rest "${ast}"
+        ${mac%%@*} ${ANON["${r}"]}
+        ast="${r}"
+    done
+    r="${ast}"
+}
+
+
+EVAL_AST () {
+    local ast="${1}" env="${2}"
+    #_pr_str "${ast}"; echo "EVAL_AST '${ast}:${r} / ${env}'"
+    _obj_type "${ast}"; local ot="${r}"
+    case "${ot}" in
+    symbol)
+        ENV_GET "${env}" "${ast}"
+        return ;;
+    list)
+        _map_with_type _list EVAL "${ast}" "${env}" ;;
+    vector)
+        _map_with_type _vector EVAL "${ast}" "${env}" ;;
+    hash_map)
+        local res="" key= val="" hm="${ANON["${ast}"]}"
+        _hash_map; local new_hm="${r}"
+        eval local keys="\${!${hm}[@]}"
+        for key in ${keys}; do
+            eval val="\${${hm}[\"${key}\"]}"
+            EVAL "${val}" "${env}"
+            _assoc! "${new_hm}" "${key}" "${r}"
+        done
+        r="${new_hm}" ;;
+    *)
+        r="${ast}" ;;
+    esac
+}
+
+EVAL () {
+    local ast="${1}" env="${2}"
+    while true; do
+    r=
+    [[ "${__ERROR}" ]] && return 1
+    #_pr_str "${ast}"; echo "EVAL '${r} / ${env}'"
+    if ! _list? "${ast}"; then
+        EVAL_AST "${ast}" "${env}"
+        return
+    fi
+
+    # apply list
+    MACROEXPAND "${ast}" "${env}"
+    ast="${r}"
+    if ! _list? "${ast}"; then
+        EVAL_AST "${ast}" "${env}"
+        return
+    fi
+    _empty? "${ast}" && r="${ast}" && return
+
+    _nth "${ast}" 0; local a0="${r}"
+    _nth "${ast}" 1; local a1="${r}"
+    _nth "${ast}" 2; local a2="${r}"
+    case "${ANON["${a0}"]}" in
+        def!) EVAL "${a2}" "${env}"
+              [[ "${__ERROR}" ]] && return 1
+              ENV_SET "${env}" "${a1}" "${r}"
+              return ;;
+        let__STAR__) ENV "${env}"; local let_env="${r}"
+              local let_pairs=(${ANON["${a1}"]})
+              local idx=0
+              #echo "let: [${let_pairs[*]}] for ${a2}"
+              while [[ "${let_pairs["${idx}"]}" ]]; do
+                  EVAL "${let_pairs[$(( idx + 1))]}" "${let_env}"
+                  ENV_SET "${let_env}" "${let_pairs[${idx}]}" "${r}"
+                  idx=$(( idx + 2))
+              done
+              ast="${a2}"
+              env="${let_env}"
+              # Continue loop
+              ;;
+        quote)
+              r="${a1}"
+              return ;;
+        quasiquote)
+              QUASIQUOTE "${a1}"
+              ast="${r}"
+              # Continue loop
+              ;;
+        defmacro!)
+              EVAL "${a2}" "${env}"
+              [[ "${__ERROR}" ]] && return 1
+              ANON["${r}_ismacro_"]="yes"
+              ENV_SET "${env}" "${a1}" "${r}"
+              return ;;
+        macroexpand)
+              MACROEXPAND "${a1}" "${env}"
+              return ;;
+        sh__STAR__)  EVAL "${a1}" "${env}"
+              local output=""
+              local line=""
+              while read line; do
+                  output="${output}${line}\n"
+              done < <(eval ${ANON["${r}"]})
+              _string "${output%\\n}"
+              return ;;
+        try__STAR__) EVAL "${a1}" "${env}"
+              [[ -z "${__ERROR}" ]] && return
+              _nth "${a2}" 0; local a20="${r}"
+              if [ "${ANON["${a20}"]}" == "catch__STAR__" ]; then
+                  _nth "${a2}" 1; local a21="${r}"
+                  _nth "${a2}" 2; local a22="${r}"
+                  _list "${a21}"; local binds="${r}"
+                  ENV "${env}" "${binds}" "${__ERROR}"
+                  local try_env="${r}"
+                  __ERROR=
+                  EVAL "${a22}" "${try_env}"
+              fi  # if no catch* clause, just propagate __ERROR
+              return ;;
+        do)   _count "${ast}"
+              _slice "${ast}" 1 $(( ${r} - 2 ))
+              EVAL_AST "${r}" "${env}"
+              [[ "${__ERROR}" ]] && r= && return 1
+              _last "${ast}"
+              ast="${r}"
+              # Continue loop
+              ;;
+        if)   EVAL "${a1}" "${env}"
+              [[ "${__ERROR}" ]] && return 1
+              if [[ "${r}" == "${__false}" || "${r}" == "${__nil}" ]]; then
+                  # eval false form
+                  _nth "${ast}" 3; local a3="${r}"
+                  if [[ "${a3}" ]]; then
+                      ast="${a3}"
+                  else
+                      r="${__nil}"
+                      return
+                  fi
+              else
+                  # eval true condition
+                  ast="${a2}"
+              fi
+              # Continue loop
+              ;;
+        fn__STAR__)  _function "ENV \"${env}\" \"${a1}\" \"\${@}\"; \
+                         EVAL \"${a2}\" \"\${r}\"" \
+                        "${a2}" "${env}" "${a1}"
+              return ;;
+        *)    EVAL_AST "${ast}" "${env}"
+              [[ "${__ERROR}" ]] && r= && return 1
+              local el="${r}"
+              _first "${el}"; local f="${ANON["${r}"]}"
+              _rest "${el}"; local args="${ANON["${r}"]}"
+              #echo "invoke: [${f}] ${args}"
+              if [[ "${f//@/ }" != "${f}" ]]; then
+                  set -- ${f//@/ }
+                  ast="${2}"
+                  ENV "${3}" "${4}" ${args}
+                  env="${r}"
+              else
+                  eval ${f%%@*} ${args}
+                  return
+              fi
+              # Continue loop
+              ;;
+    esac
+    done
+}
+
+# print
+PRINT () {
+    if [[ "${__ERROR}" ]]; then
+        _pr_str "${__ERROR}" yes
+        r="Error: ${r}"
+        __ERROR=
+    else
+        _pr_str "${1}" yes
+    fi
+}
+
+# repl
+ENV; REPL_ENV="${r}"
+REP () {
+    r=
+    READ "${1}"
+    EVAL "${r}" "${REPL_ENV}"
+    PRINT "${r}"
+}
+
+# core.sh: defined using bash
+_fref () {
+    _symbol "${1}"; local sym="${r}"
+    _function "${2} \"\${@}\""
+    ENV_SET "${REPL_ENV}" "${sym}" "${r}"
+}
+for n in "${!core_ns[@]}"; do _fref "${n}" "${core_ns["${n}"]}"; done
+_eval () { EVAL "${1}" "${REPL_ENV}"; }
+_fref "eval" _eval
+_list; argv="${r}"
+for _arg in "${@:2}"; do _string "${_arg}"; _conj! "${argv}" "${r}"; done
+_symbol "__STAR__ARGV__STAR__"
+ENV_SET "${REPL_ENV}" "${r}" "${argv}";
+
+# core.mal: defined using the language itself
+REP "(def! *host-language* \"bash\")"
+REP "(def! not (fn* (a) (if a false true)))"
+REP "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))"
+REP "(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))"
+
+read -d "" _REPCAPTURE <<INLINEMALFILE
+;; aliases for common clojure names to mal builtins
+;; NOTE: this is a hack
+
+;; Origin: https://github.com/chr15m/frock
+
+; TODO: re-implement as actually useful macros:
+; destructuring, arg checking, etc.
+
+(def! _alias_add_implicit
+  (fn* [special added]
+    (fn* [x & xs]
+      (list special x (cons added xs)))))
+
+(defmacro! let  (_alias_add_implicit 'let* 'do))
+(defmacro! when (_alias_add_implicit 'if   'do))
+(defmacro! def  (_alias_add_implicit 'def! 'do))
+(defmacro! fn   (_alias_add_implicit 'fn*  'do))
+(defmacro! defn (_alias_add_implicit 'def! 'fn))
+
+(def! partial (fn* [pfn & args]
+  (fn* [& args-inner]
+    (apply pfn (concat args args-inner)))))
+;; Pretty printer a MAL object.
+
+(def! pprint
+
+  (let* [
+
+    spaces- (fn* [indent]
+      (if (> indent 0)
+        (str " " (spaces- (- indent 1)))
+        ""))
+
+    pp-seq- (fn* [obj indent]
+      (let* [xindent (+ 1 indent)]
+        (apply str (pp- (first obj) 0)
+                   (map (fn* [x] (str "\n" (spaces- xindent)
+                                      (pp- x xindent)))
+                        (rest obj)))))
+
+    pp-map- (fn* [obj indent]
+      (let* [ks (keys obj)
+             kindent (+ 1 indent)
+             kwidth (count (seq (str (first ks))))
+             vindent (+ 1 (+ kwidth kindent))]
+        (apply str (pp- (first ks) 0)
+                   " "
+                   (pp- (get obj (first ks)) 0)
+                   (map (fn* [k] (str "\n" (spaces- kindent)
+                                      (pp- k kindent)
+                                      " "
+                                      (pp- (get obj k) vindent)))
+                        (rest (keys obj))))))
+
+    pp- (fn* [obj indent]
+      (cond
+        (list? obj)   (str "(" (pp-seq- obj indent) ")")
+        (vector? obj) (str "[" (pp-seq- obj indent) "]")
+        (map? obj)    (str "{" (pp-map- obj indent) "}")
+        :else         (pr-str obj)))
+
+    ]
+
+    (fn* [obj]
+         (println (pp- obj 0)))))
+INLINEMALFILE
+REP "(do ${_REPCAPTURE})";
+
+_str_replace () {
+  local s="${ANON["${1}"]}"; shift
+  local f="${ANON["${1}"]}"; shift
+  local x="${ANON["${1}"]}"; shift
+  _string "${s//${f}/${x}}"
+}
+
+_fref "str-replace" _str_replace
+
+_str_split() {
+  local var="${ANON["${1}"]}"; shift
+  local ifs="${ANON["${1}"]}"; shift
+  _list
+  local newlist="${r}"
+
+  while IFS="${ifs}" read -ra _str_split_arr; do
+        for _str_split_itm in "${_str_split_arr[@]}"; do
+          _string "${_str_split_itm}";
+          _conj! "${newlist}" "${r}";
+        done
+  done <<< "${var}"
+  r="${newlist}"
+}
+
+_fref "str-split" _str_split
+# load/run file from command line (then exit)
+if [[ "${1}" ]]; then
+    REP "(load-file \"${1}\")"
+    exit 0
+fi
+
+# repl loop
+REP "(println (str \"Fleck\"))"
+while true; do
+    READLINE "user> " || exit "$?"
+    [[ "${r}" ]] && REP "${r}" && echo "${r}"
+done
