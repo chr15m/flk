@@ -1,5 +1,5 @@
 EXTRAMALS=alias-hacks.mal pprint.mal
-INLINES=$(foreach f, $(EXTRAMALS), mal/lib/$(f))
+INLINES=$(foreach f,$(EXTRAMALS),mal/lib/$(f) )
 
 idm: mal/bash/mal src/*.sh $(INLINES) Makefile
 	cat $< | sed '/then exit/,$$d' > $@
