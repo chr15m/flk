@@ -3,21 +3,16 @@
   Fleck is a Clojure-like LISP that runs wherever Bash does.
 </p>
 
-```shell
-curl https://chr15m.github.io/flk/get | sh
-```
-
 <p align="center"><img src="docs/screencast.svg?sanitize=true" alt="Fleck screencast"></p>
 
-### [Install](#install) | [Examples](./examples) | [FAQ](#faq)
+# Get it
 
-# Install
+```shell
+curl -s https://chr15m.github.io/flk/flk > flk && chmod 755 flk
+./flk
+```
 
-Run the one-liner above, or:
-
- * Download the script from https://chr15m.github.io/flk/flk
- * `chmod 755 flk`
- * Copy it onto your path somewhere
+### [Examples](./examples) | [FAQ](#faq)
 
 # What?
 
