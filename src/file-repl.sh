@@ -5,7 +5,7 @@ if [[ "${1}" ]]; then
 fi
 
 # repl loop
-REP "(println (str \"idm\"))"
+REP "(println (str \"Fleck\"))"
 while true; do
     READLINE "user> " || exit "$?"
     [[ "${r}" ]] && REP "${r}" && echo "${r}"
