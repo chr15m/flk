@@ -1,6 +1,6 @@
 <p align="center">
   <img src="docs/wordmark.svg?sanitize=true" alt="Fleck wordmark"><br/>
-  Fleck is a Clojure-like LISP that runs wherever Bash does.
+  Fleck is a Clojure-like LISP that runs wherever Bash is.
 </p>
 
 <p align="center"><img src="docs/screencast.svg?sanitize=true" alt="Fleck screencast"></p>
@@ -12,7 +12,7 @@ curl -s https://chr15m.github.io/flk/flk > flk && chmod 755 flk
 ./flk
 ```
 
-### [Examples](./examples) | [FAQ](#faq)
+### [Examples](./examples) | [FAQ](#faq) | [make-a-lisp](https://github.com/kanaka/mal)
 
 # What?
 
