@@ -60,6 +60,18 @@ These are wrappers around the limited internal versions of the make-a-lisp macro
 
 `let` | `when` | `def` | `fn` | `defn`
 
+# Compile
+
+You can compile your Fleck script to a one which runs in pure Bash without Fleck.
+This works by bundling the Fleck sources with your script.
+Say you have a Fleck script called `wow.clj`, you can compile it as follows.
+
+```
+make DEST=wow INSERT=./wow.clj NOREPL=1
+```
+
+This will produce a new standalone executable script called `wow` which will bundle `wow.clj` into Fleck and it will be called at run time.
+
 # FAQ
 
 Think of this as homoiconic Bash rather than Clojure, and code as if you're in Bash.

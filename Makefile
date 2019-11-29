@@ -1,13 +1,15 @@
 EXTRAMALS=alias-hacks.mal pprint.mal
 INLINES=$(foreach f,$(EXTRAMALS),mal/lib/$(f) )
+DEST?=flk
 
-flk: mal/bash/mal src/*.sh $(INLINES) Makefile
+$(DEST): mal/bash/mal src/*.sh $(INLINES) Makefile
 	cat $< | sed '/then exit/,$$d' > $@
+	cat src/extras.sh >> $@
 	echo 'read -d "" _REPCAPTURE <<INLINEMALFILE' >> $@
 	cat $(INLINES) >> $@
+	[ "$(INSERT)" = "" ] || cat $(INSERT) >> $@
 	echo 'INLINEMALFILE\nREP "(do $${_REPCAPTURE})";\n' >> $@
-	cat src/extras.sh >> $@
-	cat src/file-repl.sh >> $@
+	if [ "$(NOREPL)" = "" ]; then cat src/file-repl.sh; fi >> $@
 	chmod 755 $@
 
 mal/bash/mal:
@@ -16,4 +18,4 @@ mal/bash/mal:
 .PHONY: clean
 
 clean:
-	rm -f flk
+	rm -f $(DEST)
