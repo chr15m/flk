@@ -1403,6 +1403,31 @@ REP "(def! not (fn* (a) (if a false true)))"
 REP "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))"
 REP "(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))"
 
+_str_replace () {
+  local s="${ANON["${1}"]}"; shift
+  local f="${ANON["${1}"]}"; shift
+  local x="${ANON["${1}"]}"; shift
+  _string "${s//${f}/${x}}"
+}
+
+_fref "str-replace" _str_replace
+
+_str_split() {
+  local var="${ANON["${1}"]}"; shift
+  local ifs="${ANON["${1}"]}"; shift
+  _list
+  local newlist="${r}"
+
+  while IFS="${ifs}" read -ra _str_split_arr; do
+        for _str_split_itm in "${_str_split_arr[@]}"; do
+          _string "${_str_split_itm}";
+          _conj! "${newlist}" "${r}";
+        done
+  done <<< "${var}"
+  r="${newlist}"
+}
+
+_fref "str-split" _str_split
 read -d "" _REPCAPTURE <<INLINEMALFILE
 ;; aliases for common clojure names to mal builtins
 ;; NOTE: this is a hack
@@ -1472,36 +1497,12 @@ read -d "" _REPCAPTURE <<INLINEMALFILE
 INLINEMALFILE
 REP "(do ${_REPCAPTURE})";
 
-_str_replace () {
-  local s="${ANON["${1}"]}"; shift
-  local f="${ANON["${1}"]}"; shift
-  local x="${ANON["${1}"]}"; shift
-  _string "${s//${f}/${x}}"
-}
-
-_fref "str-replace" _str_replace
-
-_str_split() {
-  local var="${ANON["${1}"]}"; shift
-  local ifs="${ANON["${1}"]}"; shift
-  _list
-  local newlist="${r}"
-
-  while IFS="${ifs}" read -ra _str_split_arr; do
-        for _str_split_itm in "${_str_split_arr[@]}"; do
-          _string "${_str_split_itm}";
-          _conj! "${newlist}" "${r}";
-        done
-  done <<< "${var}"
-  r="${newlist}"
-}
-
-_fref "str-split" _str_split
 # load/run file from command line (then exit)
 if [[ "${1}" ]]; then
     REP "(load-file \"${1}\")"
-    exit 0
+    [ "${r}" = "nil" ] && exit 0 || { echo "${r}"; exit 127; };
 fi
+
 
 # repl loop
 REP "(println (str \"Fleck\"))"
