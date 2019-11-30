@@ -62,15 +62,17 @@ These are wrappers around the limited internal versions of the make-a-lisp macro
 
 # Compile
 
-You can compile your Fleck script to a one which runs in pure Bash without Fleck.
-This works by bundling the Fleck sources with your script.
-Say you have a Fleck script called `wow.clj`, you can compile it as follows.
+You can make a pure bash script from your Fleck script by bundling your script and Fleck together into a new script.
+
+Say you have a Fleck script called `wow.clj`, you can bundle it as follows:
 
 ```
 make DEST=wow INSERT=./wow.clj NOREPL=1
 ```
 
-This will produce a new standalone executable script called `wow` which will bundle `wow.clj` into Fleck and it will be called at run time.
+This will produce a new standalone script called `wow` with Fleck + `wow.clj` bundled together.
+
+When you run `wow` the embedded `wow.clj` will be run by the embedded Fleck.
 
 # FAQ
 
@@ -98,7 +100,7 @@ You can't.
 
 ### Why is it called Fleck?
 
-At 36k and running on any machine with Bash, the name seemed appropriate.
+At `36k` and running on any machine with Bash, the name seemed appropriate.
 
 ```
  fleck
