@@ -15,6 +15,9 @@ $(DEST): mal/bash/mal src/*.sh $(INLINES) Makefile
 mal/bash/mal:
 	cd mal/bash && make mal
 
+test: flk
+	./mal/runtest.py tests/str.mal ./flk
+
 .PHONY: clean
 
 clean:

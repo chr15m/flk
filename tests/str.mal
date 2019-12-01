@@ -1,0 +1,8 @@
+(str-split "foo:bar:baz" ":")
+;=>("foo" "bar" "baz")
+
+(str-replace "goodbye my friends" "bye" "[day]")
+;=>"good[day] my friends"
+
+(str-replace "goodbye friend" "bye" "/[day]*!#$#")
+;=>"good/[day]*!#$# friend"
