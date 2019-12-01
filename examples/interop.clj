@@ -10,3 +10,5 @@
 (println (sh* "for x in a b c; do echo -n \"X${x}Y \"; done; echo"))
 
 (println (sh* "for x in 1 2 3; do echo -n \"$((1+$x)) \"; done; echo"))
+
+(println (sh* "for x in {1..10}; do echo LINE: ${x}; done"))
