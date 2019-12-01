@@ -168,7 +168,7 @@ _number? () { [[ ${1} =~ ^numb_ ]]; }
 _string () {
     __new_obj_hash_code
     r="strn_${r}"
-    ANON["${r}"]="${1//\*/__STAR__}"
+    ANON["${r}"]="${1}"
 }
 _string? () { [[ ${1} =~ ^strn_ ]]; }
 
@@ -1295,10 +1295,10 @@ EVAL () {
         sh__STAR__)  EVAL "${a1}" "${env}"
               local output=""
               local line=""
-              while read line; do
-                  output="${output}${line}\n"
+              while read -r line || [ -n "${line}" ]; do
+                output="${output}${line}"$'\n'
               done < <(eval ${ANON["${r}"]})
-              _string "${output%\\n}"
+              _string "${output%$'\n'}"
               return ;;
         try__STAR__) EVAL "${a1}" "${env}"
               [[ -z "${__ERROR}" ]] && return
@@ -1451,49 +1451,26 @@ read -d "" _REPCAPTURE <<INLINEMALFILE
 (def! partial (fn* [pfn & args]
   (fn* [& args-inner]
     (apply pfn (concat args args-inner)))))
-;; Pretty printer a MAL object.
+;; Trivial but convenient functions.
 
-(def! pprint
+;; Integer predecessor (number -> number)
+(def! inc (fn* [a] (+ a 1)))
 
-  (let* [
+;; Integer predecessor (number -> number)
+(def! dec (fn* (a) (- a 1)))
 
-    spaces- (fn* [indent]
-      (if (> indent 0)
-        (str " " (spaces- (- indent 1)))
-        ""))
+;; Integer nullity test (number -> boolean)
+(def! zero? (fn* (n) (= 0 n)))
 
-    pp-seq- (fn* [obj indent]
-      (let* [xindent (+ 1 indent)]
-        (apply str (pp- (first obj) 0)
-                   (map (fn* [x] (str "\n" (spaces- xindent)
-                                      (pp- x xindent)))
-                        (rest obj)))))
+;; Returns the unchanged argument.
+(def! identity (fn* (x) x))
 
-    pp-map- (fn* [obj indent]
-      (let* [ks (keys obj)
-             kindent (+ 1 indent)
-             kwidth (count (seq (str (first ks))))
-             vindent (+ 1 (+ kwidth kindent))]
-        (apply str (pp- (first ks) 0)
-                   " "
-                   (pp- (get obj (first ks)) 0)
-                   (map (fn* [k] (str "\n" (spaces- kindent)
-                                      (pp- k kindent)
-                                      " "
-                                      (pp- (get obj k) vindent)))
-                        (rest (keys obj))))))
-
-    pp- (fn* [obj indent]
-      (cond
-        (list? obj)   (str "(" (pp-seq- obj indent) ")")
-        (vector? obj) (str "[" (pp-seq- obj indent) "]")
-        (map? obj)    (str "{" (pp-map- obj indent) "}")
-        :else         (pr-str obj)))
-
-    ]
-
-    (fn* [obj]
-         (println (pp- obj 0)))))
+;; Generate a hopefully unique symbol. See section "Plugging the Leaks"
+;; of http://www.gigamonkeys.com/book/macros-defining-your-own.html
+(def! gensym
+  (let* [counter (atom 0)]
+    (fn* []
+      (symbol (str "G__" (swap! counter inc))))))
 INLINEMALFILE
 REP "(do ${_REPCAPTURE})";
 
