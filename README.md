@@ -37,6 +37,8 @@ Almost all of this code is from the [make-a-LISP](https://github.com/kanaka/mal/
 
 A list of macros and functions that are present in Fleck.
 
+Fleck runs on Bash 4 and higher.
+
 ## Built-ins
 
 This is the set of built-ins from the make-a-lisp project.
