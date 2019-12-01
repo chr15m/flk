@@ -1297,7 +1297,7 @@ EVAL () {
               local line=""
               while read -r line || [ -n "${line}" ]; do
                 output="${output}${line}"$'\n'
-              done < <(eval ${ANON["${r}"]})
+              done < <(eval "${ANON["${r}"]}")
               _string "${output%$'\n'}"
               return ;;
         try__STAR__) EVAL "${a1}" "${env}"
@@ -1471,6 +1471,16 @@ read -d "" _REPCAPTURE <<INLINEMALFILE
   (let* [counter (atom 0)]
     (fn* []
       (symbol (str "G__" (swap! counter inc))))))
+;; wrap dc to get floating point math
+(defn dc [op args]
+  (let [calcstr (str "dc <<< '"
+                     (first args)
+                     (apply str (map
+                                  (fn [a] (str " " a " " op))
+                                  (rest args)))
+                     " p'")]
+    (read-string
+      (sh* calcstr))))
 INLINEMALFILE
 REP "(do ${_REPCAPTURE})";
 
