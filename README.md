@@ -41,24 +41,28 @@ A list of macros and functions that are present in Fleck.
 
 This is the set of built-ins from the make-a-lisp project.
 These more or less work but are generally more limited in functionality than their Clojure equivalents.
-For example the addition function `(+)` can only add two numbers at a time.
+For example the addition function `(+)` can only add two integers at a time.
 
 `def!` | `defmacro!` | `if` | `do` | `fn*` | `try*` | `sh*` | `let*` | `quote` | `quasiquote` | `macroexpand` | `type` | `=` | `throw` | `nil?` | `true?` | `false?` | `string?` | `symbol` | `symbol?` | `keyword` | `keyword?` | `number?` | `fn?` | `macro?` | `pr-str` | `str` | `prn` | `println` | `readline` | `read-string` | `slurp` | `<` | `<=` | `>` | `>=` | `+` | `-` | `*` | `/` | `time-ms` | `list` | `list?` | `vector` | `vector?` | `hash-map` | `map?` | `assoc` | `dissoc` | `get` | `contains?` | `keys` | `vals` | `sequential?` | `cons` | `concat` | `nth` | `first` | `rest` | `empty?` | `count` | `apply` | `map` | `conj` | `seq` | `with-meta` | `meta` | `atom` | `atom?` | `deref` | `reset!` | `swap!`
 
-## Extras
+## Aliases
 
-These functions are defined in Fleck itself or pulled in from the `mal/lib/` folder.
+These are wrappers around the limited make-a-lisp versions and are much more limited than the Clojure equivalents.
 
-`pprint` | `str-replace` | `str-split`
+`let` | `when` | `def` | `fn` | `defn`
+
+## Mal extras
+
+These functions are pulled from a selection of `mal/lib/*.mal`.
+
+`partial` | `inc` | `dec` | `zero` | `identity`
+
+## Fleck extras
+
+These functions are hand crafted Fleck specials design to make common shell scripting tasks easier.
 
  * `(str-replace STRING FIND REPLACE)` - Replace all occurrences of the string `FIND` in `STRING` with the string `REPLACE`.
  * `(str-split STRING SPLIT-CHARACTER)` - Split `STRING` into a list of strings on the single characters `SPLIT-CHARACTER`.
-
-## Aliases
-
-These are wrappers around the limited internal versions of the make-a-lisp macros and functions and are much more limited than the Clojure equivalents.
-
-`let` | `when` | `def` | `fn` | `defn`
 
 # Compile
 
