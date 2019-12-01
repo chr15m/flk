@@ -29,6 +29,8 @@ Now you can use a humble LISP to do Bash things.
 Bash as a scripting language has many edges, but it is everywhere.
 Fleck attempts to round off the edges.
 
+Fleck runs on Bash 4 and higher.
+
 # How?
 
 Almost all of this code is from the [make-a-LISP](https://github.com/kanaka/mal/) project. All I've done is put together a simple Makefile to package it up into an easily deployable single-file bash script.
@@ -36,8 +38,6 @@ Almost all of this code is from the [make-a-LISP](https://github.com/kanaka/mal/
 # Reference
 
 A list of macros and functions that are present in Fleck.
-
-Fleck runs on Bash 4 and higher.
 
 ## Built-ins
 
