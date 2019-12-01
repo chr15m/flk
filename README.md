@@ -89,17 +89,19 @@ Think of this as homoiconic Bash rather than Clojure, and code as if you're in B
 
 No, it's bash.
 
+Some subset of Clojure-like code will run. See the documentation and examples.
+
 ### Why can't I add more than 2 numbers together?
 
-It's bash. Try invoking bc: `(sh* "bc <<< '1 + 2 + 3 + 4'")`
+It's bash. Try the `dc` function: `(dc '+ [1 2 3 4])`
 
 ### Where are the floating point numbers?
 
-It's bash. Try invoking bc: `(sh* "bc <<< '3 + 0.1415926'")`
+It's bash. Try the `dc` function for decimals: `(dc '* [8.2 3.5])`
 
 ### Why can't I iterate on a string?
 
-It's bash. Try `(seq "somestring")`.
+Try `(seq "somestring")`.
 
 ### How do I do destructuring?
 
@@ -107,7 +109,7 @@ You can't.
 
 ### Why is it called Fleck?
 
-At `36k` and running on any machine with Bash, the name seemed appropriate.
+At `36k` and running on any machine with Bash 4, the name seemed appropriate.
 
 ```
  fleck
