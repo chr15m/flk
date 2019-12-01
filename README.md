@@ -65,7 +65,7 @@ These functions are hand crafted Fleck specials design to make common shell scri
 
  * `(str-replace STRING FIND REPLACE)` - Replace all occurrences of the string `FIND` in `STRING` with the string `REPLACE`.
  * `(str-split STRING SPLIT-CHARACTER)` - Split `STRING` into a list of strings on the single characters `SPLIT-CHARACTER`.
- * `(dc OPERATION ARRAY-OF-NUMBERS)` - Wraps the `dc` command to do floating point math. E.g. `(dc '+ [1 2 3])` yeilds `6`.
+ * `(dc OPERATOR ARRAY-OF-NUMBERS)` - Wraps the `dc` command to do decimal math. E.g. `(dc '+ [1 2 3])` yeilds `6`.
 
 # Compile
 
