@@ -1,4 +1,4 @@
-EXTRAMALS=alias-hacks.mal pprint.mal
+EXTRAMALS=alias-hacks.mal trivial.mal
 INLINES=$(foreach f,$(EXTRAMALS),mal/lib/$(f) )
 DEST?=flk
 
