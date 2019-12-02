@@ -61,7 +61,7 @@ These functions are pulled from a selection of `mal/lib/*.mal`.
 
 ## Fleck extras
 
-These functions are hand crafted Fleck specials design to make common shell scripting tasks easier.
+These functions are hand crafted Fleck specials designed to make common shell scripting tasks easier.
 
  * `(str-replace STRING FIND REPLACE)` - Replace all occurrences of the string `FIND` in `STRING` with the string `REPLACE`.
  * `(str-split STRING SPLIT-CHARACTER)` - Split `STRING` into a list of strings on the single characters `SPLIT-CHARACTER`.
