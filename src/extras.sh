@@ -23,3 +23,12 @@ _str_split() {
 }
 
 _fref "str-split" _str_split
+
+_remove_hashbang() {
+  src="${ANON["${1}"]}"
+  _string "${src/*flk$'\n'/}"
+}
+
+_fref "remove-hashbang" _remove_hashbang
+
+REP "(def! load-file-without-hashbang (fn* (f) (eval (read-string (str \"(do \" (remove-hashbang (slurp f) ) \"\nnil)\")))))"

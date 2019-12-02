@@ -1,6 +1,6 @@
 # load/run file from command line (then exit)
 if [[ "${1}" ]]; then
-    REP "(load-file \"${1}\")"
+    REP "(load-file-without-hashbang \"${1}\")"
     [ "${r}" = "nil" ] && exit 0 || { echo "${r}"; exit 127; };
 fi
 
