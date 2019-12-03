@@ -59,7 +59,7 @@ These are wrappers around the limited make-a-lisp versions and are much more lim
 
 These functions are pulled from a selection of `mal/lib/*.mal`.
 
-`partial` | `inc` | `dec` | `zero` | `identity`
+`partial` | `inc` | `dec` | `zero` | `identity` | `reduce` | `foldr`
 
 ## Fleck extras
 
