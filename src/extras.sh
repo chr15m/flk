@@ -14,10 +14,10 @@ _str_split() {
   local newlist="${r}"
 
   while IFS="${ifs}" read -ra _str_split_arr; do
-        for _str_split_itm in "${_str_split_arr[@]}"; do
-          _string "${_str_split_itm}";
-          _conj! "${newlist}" "${r}";
-        done
+    for _str_split_itm in "${_str_split_arr[@]}"; do
+      _string "${_str_split_itm}";
+      _conj! "${newlist}" "${r}";
+    done
   done <<< "${var}"
   r="${newlist}"
 }
