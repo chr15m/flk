@@ -104,6 +104,23 @@ No, it's bash.
 
 Some subset of Clojure-like code will run. See the [documentation](#reference) and [examples](./examples).
 
+### How do I access command line arguments?
+
+Use the special global list `*ARGV*`.
+
+### How do I access and modify environment variables?
+
+Check the [`(env)` function above](#fleck-extras). See also [examples/environment-variables.clj](./examples/environment-variables.clj).
+
+### How can I execute a one-liner of Fleck code?
+
+Either of these methods will work:
+
+```shell
+flk <<< '(println "hi")'
+echo '(println "hi")' | flk
+```
+
 ### Why can't I add more than 2 numbers together?
 
 It's bash. Try the `dc` function: `(dc '+ [1 2 3 4])`
@@ -113,10 +130,6 @@ It's bash. Try the `dc` function: `(dc '+ [1 2 3 4])`
 It's bash. Try the `dc` function for decimals: `(dc '* [8.2 3.5])`
 
 Note that dc's divide seems to only output integers. ¯\\_(ツ)_/¯
-
-### How do I access command line arguments?
-
-Use the special global list `*ARGV*`.
 
 ### Why can't I iterate on a string?
 
@@ -129,10 +142,6 @@ You can't.
 ### Can I use anything as a `hash-map` key?
 
 Seems unlikely. Better stick to strings.
-
-### How do I access and modify environment variables?
-
-Check the [`(env)` function above](#fleck-extras). See also [examples/environment-variables.clj](./examples/environment-variables.clj).
 
 ### Why is it called Fleck?
 
