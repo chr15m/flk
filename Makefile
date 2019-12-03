@@ -1,5 +1,5 @@
 EXTRAMALS=alias-hacks.mal trivial.mal
-LOCALMALS=math.clj
+LOCALMALS=math.clj reducers.clj
 INLINES=$(foreach f,$(EXTRAMALS),mal/lib/$(f) ) $(foreach f,$(LOCALMALS),src/$(f) )
 DEST?=flk
 
