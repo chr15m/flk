@@ -1,0 +1,5 @@
+(map (fn [x] (inc x)) [3 1 4])
+;=>(4 2 5)
+
+(reduce (fn [a x] (+ a x)) 0 (map (fn [y] (read-string y)) [1 2 3 4 5 6]))
+;=>21

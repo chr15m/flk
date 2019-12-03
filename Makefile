@@ -20,6 +20,7 @@ test: flk
 	./mal/runtest.py tests/str.mal ./flk
 	./mal/runtest.py tests/math.mal ./flk
 	./mal/runtest.py tests/env.mal ./flk
+	./mal/runtest.py tests/loop.mal ./flk
 
 .PHONY: clean
 
