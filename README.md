@@ -68,10 +68,12 @@ These functions are hand crafted Fleck specials designed to make common shell sc
  * `(str-replace STRING FIND REPLACE)` - Replace all occurrences of the string `FIND` in `STRING` with the string `REPLACE`.
  * `(str-split STRING SPLIT-CHARACTER)` - Split `STRING` into a list of strings on the single characters `SPLIT-CHARACTER`.
  * `(dc OPERATOR ARRAY-OF-NUMBERS)` - Wraps the `dc` command to do decimal math. E.g. `(dc '+ [1 2 3])` yeilds `6`.
+ * `(env [KEY] [VALUE])` - Returns a `hash-map` of environment variables. Returns the value of `KEY` if present. Sets the value of `KEY` to `VAL` if the latter is present.
 
 ## Interop
 
  * `(sh* COMMAND)` - Run arbitrary bash strings and return the stdout result.
+ * `(env [KEY] [VALUE])` - See above section.
 
 For examples of writing your own Fleck functions in Bash see [src/extras.sh](./src/extras.sh).
 Functions should set the special return value `r` and use Fleck type casting functions like `_string` to wrap the result in a reference.
@@ -100,7 +102,7 @@ Think of this as homoiconic Bash rather than Clojure, and code as if you're in B
 
 No, it's bash.
 
-Some subset of Clojure-like code will run. See the documentation and examples.
+Some subset of Clojure-like code will run. See the [documentation](#reference) and [examples](./examples).
 
 ### Why can't I add more than 2 numbers together?
 
@@ -123,6 +125,14 @@ Try `(seq "somestring")`.
 ### How do I do destructuring?
 
 You can't.
+
+### Can I use anything as a `hash-map` key?
+
+Seems unlikely. Better stick to strings.
+
+### How do I access and modify environment variables?
+
+Check the [`(env)` function above](#fleck-extras). See also [examples/environment-variables.clj](./examples/environment-variables.clj).
 
 ### Why is it called Fleck?
 
