@@ -1,4 +1,4 @@
-<p align="center">
+< align="center">
   <img src="docs/wordmark.svg?sanitize=true" alt="Fleck wordmark"><br/>
   Fleck is a Clojure-like LISP that runs wherever Bash is.
 </p>
@@ -73,7 +73,7 @@ These functions are hand crafted Fleck specials designed to make common shell sc
 
  * `(sh* COMMAND)` - Run arbitrary bash strings and return the stdout result.
 
-For examples of writing your own Fleck functions in Bash see [src/extras.sh](./scrc/extras.sh).
+For examples of writing your own Fleck functions in Bash see [src/extras.sh](./src/extras.sh).
 Functions should set the special return value `r` and use Fleck type casting functions like `_string` to wrap the result in a reference.
 Internal Fleck functions such as `_string` automatically do this and can be used bare.
 Use `_fref` to make your function available to the Fleck namespace e.g. `_fref "my-bash-function" _my_bash_function`.
