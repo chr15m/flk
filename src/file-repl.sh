@@ -9,9 +9,9 @@ then
   fi
 
   # repl loop
-  REP "(println (str \"Fleck\"))"
+  [ -t 0 ] && REP "(println (str \"Fleck\"))"
   while true; do
       READLINE "user> " || exit "$?"
-      [[ "${r}" ]] && REP "${r}" && echo "${r}"
+      [[ "${r}" ]] && REP "${r}" && ( [ -t 0 ] && echo "${r}" )
   done
 fi
