@@ -1,4 +1,4 @@
-< align="center">
+<align="center">
   <img src="docs/wordmark.svg?sanitize=true" alt="Fleck wordmark"><br/>
   Fleck is a Clojure-like LISP that runs wherever Bash is.
 </p>
