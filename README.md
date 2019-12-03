@@ -67,6 +67,15 @@ These functions are hand crafted Fleck specials designed to make common shell sc
  * `(str-split STRING SPLIT-CHARACTER)` - Split `STRING` into a list of strings on the single characters `SPLIT-CHARACTER`.
  * `(dc OPERATOR ARRAY-OF-NUMBERS)` - Wraps the `dc` command to do decimal math. E.g. `(dc '+ [1 2 3])` yeilds `6`.
 
+## Interop
+
+ * `(sh* COMMAND)` - Run arbitrary bash strings and return the stdout result.
+
+For examples of writing your own Fleck functions in Bash see [src/extras.sh](./scrc/extras.sh).
+Functions should set the special return value `r` and use Fleck type casting functions like `_string` to wrap the result in a reference.
+Internal Fleck functions such as `_string` automatically do this and can be used bare.
+Use `_fref` to make your function available to the Fleck namespace e.g. `_fref "my-bash-function" _my_bash_function`.
+
 # Compile
 
 You can make a pure bash script from your Fleck script by bundling your script and Fleck together into a new script.
@@ -98,6 +107,8 @@ It's bash. Try the `dc` function: `(dc '+ [1 2 3 4])`
 ### Where are the floating point numbers?
 
 It's bash. Try the `dc` function for decimals: `(dc '* [8.2 3.5])`
+
+Note that dc's divide seems to only output integers. ¯\_(ツ)_/¯
 
 ### Why can't I iterate on a string?
 
