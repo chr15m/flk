@@ -37,7 +37,7 @@ Almost all of this code is from the [make-a-LISP](https://github.com/kanaka/mal/
 
 # Reference
 
-A list of macros and functions that are present in Fleck.
+A list of variables, macros and functions that are present in Fleck.
 
 ## Built-ins
 
@@ -46,6 +46,8 @@ These more or less work but are generally more limited in functionality than the
 For example the addition function `(+)` can only add two integers at a time.
 
 `def!` | `defmacro!` | `if` | `do` | `fn*` | `try*` | `sh*` | `let*` | `quote` | `quasiquote` | `macroexpand` | `type` | `=` | `throw` | `nil?` | `true?` | `false?` | `string?` | `symbol` | `symbol?` | `keyword` | `keyword?` | `number?` | `fn?` | `macro?` | `pr-str` | `str` | `prn` | `println` | `readline` | `read-string` | `slurp` | `<` | `<=` | `>` | `>=` | `+` | `-` | `*` | `/` | `time-ms` | `list` | `list?` | `vector` | `vector?` | `hash-map` | `map?` | `assoc` | `dissoc` | `get` | `contains?` | `keys` | `vals` | `sequential?` | `cons` | `concat` | `nth` | `first` | `rest` | `empty?` | `count` | `apply` | `map` | `conj` | `seq` | `with-meta` | `meta` | `atom` | `atom?` | `deref` | `reset!` | `swap!`
+
+ * `*ARGV*` - list of arguments passed on the command line.
 
 ## Aliases
 
@@ -108,7 +110,11 @@ It's bash. Try the `dc` function: `(dc '+ [1 2 3 4])`
 
 It's bash. Try the `dc` function for decimals: `(dc '* [8.2 3.5])`
 
-Note that dc's divide seems to only output integers. ¯\_(ツ)_/¯
+Note that dc's divide seems to only output integers. ¯\\_(ツ)_/¯
+
+### How do I access command line arguments?
+
+Use the special global list `*ARGV*`.
 
 ### Why can't I iterate on a string?
 
