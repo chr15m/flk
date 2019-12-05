@@ -131,6 +131,10 @@ It's bash. Try the `dc` function for decimals: `(dc '* [8.2 3.5])`
 
 Note that dc's divide seems to only output integers. ¯\\_(ツ)_/¯
 
+### How do I cast a string to a number?
+
+Try `(read-str "42")` but also Bash doesn't care and `(+ "1" 1)` will yeild `2`.
+
 ### Why can't I iterate on a string?
 
 Try `(seq "somestring")`.
@@ -142,6 +146,12 @@ You can't.
 ### Can I use anything as a `hash-map` key?
 
 Seems unlikely. Better stick to strings.
+
+### This is even slower than Python!
+
+Yes.
+
+PS That is not actually a question.
 
 ### Why is it called Fleck?
 
