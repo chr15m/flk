@@ -1,1 +1,1 @@
-(str-split (sh* "find ./ -name '*.mal'") "\n")
+(println (str-split (sh* "find ./ -name '*.mal'") "\n"))

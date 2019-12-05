@@ -1,6 +1,4 @@
-; from gherkin: https://github.com/alandipert/gherkin/blob/master/fib.gk
-      
-(defn fib* (a b n)
+(defn fib* [a b n]
   (if (> n 0)
     (fib* b (+ a b) (- n 1))
     a))
