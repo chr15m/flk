@@ -6,10 +6,10 @@ DEST?=flk
 $(DEST): mal/bash/mal src/*.sh $(INLINES) Makefile
 	cat $< | sed '/then exit/,$$d' > $@
 	cat src/extras.sh >> $@
-	echo 'read -d "" _REPCAPTURE <<INLINEMALFILE' >> $@
+	printf 'read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE\n' >> $@
 	cat $(INLINES) >> $@
 	[ "$(INSERT)" = "" ] || cat $(INSERT) >> $@
-	echo 'INLINEMALFILE\nREP "(do $${_REPCAPTURE})";\n' >> $@
+	printf '\n__FLECK__INLINEMALFILE\nREP "(do $${__FLECK__REPCAPTURE})";\n' >> $@
 	if [ "$(NOREPL)" = "" ]; then cat src/file-repl.sh; fi >> $@
 	chmod 755 $@
 
