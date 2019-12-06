@@ -102,7 +102,8 @@ Think of this as homoiconic Bash rather than Clojure, and code as if you're in B
 
 No, it's bash.
 
-Some subset of Clojure-like code will run. See the [documentation](#reference) and [examples](./examples).
+Some subset of Clojure-like code will run.
+See the [documentation](#reference) and [examples](./examples).
 
 ### How do I access command line arguments?
 
@@ -110,7 +111,8 @@ Use the special global list `*ARGV*`.
 
 ### How do I access and modify environment variables?
 
-Check the [`(env)` function above](#fleck-extras). See also [examples/environment-variables.clj](./examples/environment-variables.clj).
+Check the [`(env)` function above](#fleck-extras).
+See also [examples/environment-variables.clj](./examples/environment-variables.clj).
 
 ### How can I execute a one-liner of Fleck code?
 
@@ -152,6 +154,11 @@ Seems unlikely. Better stick to strings.
 Yes.
 
 PS That is not actually a question.
+
+### Haven't I seen this before somewhere?
+
+You're probably thinking of [Gherkin, the original Clojure-like LISP in Bash by Alan Dipert](https://github.com/alandipert/gherkin/).
+Gherkin helped kick off the [make-a-lisp](https://github.com/kanaka/mal/) revolution.
 
 ### Why is it called Fleck?
 
