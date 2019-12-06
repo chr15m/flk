@@ -12,6 +12,6 @@ then
   [ -t 0 ] && REP "(println (str \"Fleck\"))"
   while true; do
       READLINE "user> " || exit "$?"
-      [[ "${r}" ]] && REP "${r}" && ( [ -t 0 ] && echo "${r}" )
+      [[ "${r}" ]] && REP "(do ${r})" && ( [ -t 0 ] && echo "${r}" )
   done
 fi
