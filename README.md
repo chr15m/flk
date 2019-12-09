@@ -131,7 +131,7 @@ It's bash. Try the `dc` function: `(dc '+ [1 2 3 4])`
 
 It's bash. Try the `dc` function for decimals: `(dc '* [8.2 3.5])`
 
-Note that dc's divide seems to only output integers. ¯\\_(ツ)_/¯
+`dc` is set to keep four fractional digits in its results.
 
 ### How do I cast a string to a number?
 

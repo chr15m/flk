@@ -1,6 +1,6 @@
 ;; wrap dc to get floating point math
 (defn dc [op args]
-  (let [calcstr (str "dc <<< '"
+  (let [calcstr (str "dc <<< '4k"
                      (first args)
                      (apply str (map
                                   (fn [a] (str " " a " " op))
