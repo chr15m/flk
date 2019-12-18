@@ -145,6 +145,12 @@ Try `(seq "somestring")`.
 
 You can't.
 
+### How do I use a key/`hash-map` as a function in lookups?
+
+You can't. You'll get an error with something like `(:a {:a 12})` or `({:a 12} :a)`.
+
+Instead you must use `get` like this: `(get {:a 12} :a)`.
+
 ### Can I use anything as a `hash-map` key?
 
 Seems unlikely. Better stick to strings.
