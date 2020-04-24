@@ -69,11 +69,13 @@ These functions are hand crafted Fleck specials designed to make common shell sc
  * `(str-split STRING SPLIT-CHARACTER)` - Split `STRING` into a list of strings on the single characters `SPLIT-CHARACTER`.
  * `(dc OPERATOR ARRAY-OF-NUMBERS)` - Wraps the `dc` command to do decimal math. E.g. `(dc '+ [1 2 3])` yeilds `6`.
  * `(env [KEY] [VALUE])` - Returns a `hash-map` of environment variables. Returns the value of `KEY` if present. Sets the value of `KEY` to `VAL` if the latter is present.
+ * `(sh! COMMAND ARGS)` - Run a bash command with arguments. Returns `[stdout stderr return-code]` from the resulting call.
 
 ## Interop
 
- * `(sh* COMMAND)` - Run arbitrary bash strings and return the stdout result.
  * `(env [KEY] [VALUE])` - See above section.
+ * `(sh! COMMAND [ARGS])` - See above section.
+ * `(sh* COMMAND)` - Run arbitrary bash strings and return the stdout result.
 
 For examples of writing your own Fleck functions in Bash see [src/extras.sh](./src/extras.sh).
 Functions should set the special return value `r` and use Fleck type casting functions like `_string` to wrap the result in a reference.
