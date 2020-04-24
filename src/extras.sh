@@ -52,15 +52,6 @@ _env() {
 
 _fref "env" _env
 
-_remove_hashbang() {
-  src="${ANON["${1}"]}"
-  _string "${src/*flk$'\n'/}"
-}
-
-_fref "remove-hashbang" _remove_hashbang
-
-REP "(def! load-file-without-hashbang (fn* (f) (eval (read-string (str \"(do \" (remove-hashbang (slurp f) ) \"\nnil)\")))))"
-
 _sh_BANG() {
   local args=""
   local t_std=""
@@ -92,3 +83,12 @@ _sh_BANG() {
 }
 
 _fref "sh!" _sh_BANG
+
+_remove_hashbang() {
+  src="${ANON["${1}"]}"
+  _string "${src/*flk$'\n'/}"
+}
+
+_fref "remove-hashbang" _remove_hashbang
+
+REP "(def! load-file-without-hashbang (fn* (f) (eval (read-string (str \"(do \" (remove-hashbang (slurp f) ) \"\nnil)\")))))"
