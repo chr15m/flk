@@ -78,7 +78,7 @@ These functions are hand crafted Fleck specials designed to make common shell sc
  * `(sh* COMMAND)` - Run arbitrary bash strings and return the stdout result.
 
 For examples of writing your own Fleck functions in Bash see [src/extras.sh](./src/extras.sh).
-Functions should set the special return value `r` and use Fleck type casting functions like `_string` to wrap the result in a reference.
+Functions should set the special return value `r` and use [mal](https://github.com/kanaka/mal) type casting functions like `_string` to wrap the result in a reference.
 Internal Fleck functions such as `_string` automatically do this and can be used bare.
 Use `_fref` to make your function available to the Fleck namespace e.g. `_fref "my-bash-function" _my_bash_function`.
 
@@ -167,6 +167,7 @@ PS That is not actually a question.
 
 You're probably thinking of [Gherkin, the original Clojure-like LISP in Bash by Alan Dipert](https://github.com/alandipert/gherkin/).
 Gherkin helped kick off the [make-a-lisp](https://github.com/kanaka/mal/) revolution.
+You might also be thinking of [babashka](https://github.com/borkdude/babashka) which is a bare-metal solution using real Clojure.
 
 ### Why is it called Fleck?
 
