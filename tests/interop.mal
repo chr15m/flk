@@ -16,5 +16,5 @@
 (sh! "echo \"Cool beans.\";")
 ;=>("Cool beans." "" 0)
 
-(sh! "( echo 'I am stdout.'; echo 'I am stderr.' >&2; echo 'I am stdout again.'; exit 23; )" [])
+(sh! "( echo 'I am stdout.'; echo 'I am stderr.' >&2; echo 'I am stdout again.'; exit 23; )")
 ;=>("I am stdout.\nI am stdout again." "I am stderr." 23)
