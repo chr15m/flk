@@ -10,7 +10,7 @@ then
 
   # repl loop
   if [[ -t 0 ]]; then
-    REP "(println (str \"Fleck\"))"
+    REP "(println (str \"Fleck \" *fleck-revision*))"
     while true; do
       READLINE "user> " || exit "$?"
       [[ "${r}" ]] && REP "(do ${r})" && echo "${r}"

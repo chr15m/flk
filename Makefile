@@ -2,6 +2,7 @@ EXTRAMALS=alias-hacks.mal trivial.mal
 LOCALMALS=math.clj reducers.clj
 INLINES=$(foreach f,$(EXTRAMALS),mal/lib/$(f) ) $(foreach f,$(LOCALMALS),src/$(f) )
 DEST?=flk
+REVISION=$(shell git rev-parse HEAD | cut -b1-8)
 
 $(DEST): mal/bash/mal src/*.sh $(INLINES) Makefile
 	cat $< | sed '/then exit/,$$d' > $@
@@ -10,6 +11,7 @@ $(DEST): mal/bash/mal src/*.sh $(INLINES) Makefile
 	cat $(INLINES) >> $@
 	[ "$(INSERT)" = "" ] || cat $(INSERT) >> $@
 	printf '\n__FLECK__INLINEMALFILE\nREP "(do $${__FLECK__REPCAPTURE})";\n' >> $@
+	printf 'REP "(def! *fleck-revision* \\"$(REVISION)\\")"\n' >> $@
 	if [ "$(NOREPL)" = "" ]; then cat src/file-repl.sh; fi >> $@
 	chmod 755 $@
 
