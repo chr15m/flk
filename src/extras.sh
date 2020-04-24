@@ -62,12 +62,12 @@ _fref "remove-hashbang" _remove_hashbang
 REP "(def! load-file-without-hashbang (fn* (f) (eval (read-string (str \"(do \" (remove-hashbang (slurp f) ) \"\nnil)\")))))"
 
 _sh_BANG() {
-  local cmd="${ANON["${1}"]}"; shift
-  local args="${ANON["${1}"]}"; shift
-
+  local args=""
   local t_std=""
   local t_err=""
   local t_ret=0
+  local cmd="${ANON["${1}"]}"; shift
+  [ "${1}" != "" ] && args="${ANON["${1}"]}"; shift
 
   local cmdargs="${cmd}"
   for _arg in ${args}; do
