@@ -1431,6 +1431,15 @@ _str_split() {
 
 _fref "str-split" _str_split
 
+_str_pos() {
+  local haystack="${ANON["${1}"]}"; shift
+  local needle="${ANON["${1}"]}"; shift
+  local pos="${haystack%%$needle*}"
+  [[ "$pos" == "$haystack" ]] && _number "-1" || _number "${#pos}"
+}
+
+_fref "str-pos" _str_pos
+
 _env() {
   local key
   local val
@@ -1458,6 +1467,38 @@ _env() {
 }
 
 _fref "env" _env
+
+_sh_BANG() {
+  local args=""
+  local t_std=""
+  local t_err=""
+  local t_ret=0
+  local cmd="${ANON["${1}"]}"; shift
+  [ "${1}" != "" ] && args="${ANON["${1}"]}"; shift
+
+  local cmdargs="${cmd}"
+  for _arg in ${args}; do
+    cmdargs="$cmdargs ${ANON["${_arg}"]}";
+  done
+
+  eval "$( eval "$cmdargs" 2> >(t_err=$(cat); typeset -p t_err) > >(t_std=$(cat); typeset -p t_std); t_ret=$?; typeset -p t_ret );";
+
+  _list
+  local newlist="${r}"
+
+  _string "$t_std";
+  _conj! "${newlist}" "${r}";
+
+  _string "$t_err"
+  _conj! "${newlist}" "${r}";
+
+  _number "$t_ret"
+  _conj! "${newlist}" "${r}";
+
+  r="${newlist}"
+}
+
+_fref "sh!" _sh_BANG
 
 _remove_hashbang() {
   src="${ANON["${1}"]}"
@@ -1528,6 +1569,7 @@ read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE
 
 __FLECK__INLINEMALFILE
 REP "(do ${__FLECK__REPCAPTURE})";
+REP "(def! *fleck-revision* \"af692957\")"
 ( return 0 2>/dev/null ) && _fleck_sourced=1 || _fleck_sourced=0
 
 if [ "${_fleck_sourced}" = "0" ]
@@ -1540,7 +1582,7 @@ then
 
   # repl loop
   if [[ -t 0 ]]; then
-    REP "(println (str \"Fleck\"))"
+    REP "(println (str \"Fleck \" *fleck-revision*))"
     while true; do
       READLINE "user> " || exit "$?"
       [[ "${r}" ]] && REP "(do ${r})" && echo "${r}"
