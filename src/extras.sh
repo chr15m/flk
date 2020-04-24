@@ -60,3 +60,35 @@ _remove_hashbang() {
 _fref "remove-hashbang" _remove_hashbang
 
 REP "(def! load-file-without-hashbang (fn* (f) (eval (read-string (str \"(do \" (remove-hashbang (slurp f) ) \"\nnil)\")))))"
+
+_sh_BANG() {
+  local cmd="${ANON["${1}"]}"; shift
+  local args="${ANON["${1}"]}"; shift
+
+  local t_std=""
+  local t_err=""
+  local t_ret=0
+
+  local cmdargs="${cmd}"
+  for _arg in ${args}; do
+    cmdargs="$cmdargs ${ANON["${_arg}"]}";
+  done
+
+  eval "$( eval "$cmdargs" 2> >(t_err=$(cat); typeset -p t_err) > >(t_std=$(cat); typeset -p t_std); t_ret=$?; typeset -p t_ret );";
+
+  _list
+  local newlist="${r}"
+
+  _string "$t_std";
+  _conj! "${newlist}" "${r}";
+
+  _string "$t_err"
+  _conj! "${newlist}" "${r}";
+
+  _number "$t_ret"
+  _conj! "${newlist}" "${r}";
+
+  r="${newlist}"
+}
+
+_fref "sh!" _sh_BANG
