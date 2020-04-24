@@ -1,0 +1,20 @@
+(sh* "echo 'hello'")
+;=>"hello"
+
+(sh* "grep -o homoiconic README.md")
+;=>"homoiconic"
+
+(sh! 'grep ["-o" "homoiconic" "README.md"])
+;=>("homoiconic" "" 0)
+
+(sh! 'grep ["-o" "homophonic" "README.md"])
+;=>("" "" 1)
+
+(let [result (sh! 'badcommand ["no"])] (list (first result) (nth result 2)))
+;=>("" 127)
+
+(sh! "echo \"Cool beans.\";" [])
+;=>("Cool beans." "" 0)
+
+(sh! "( echo 'I am stdout.'; echo 'I am stderr.' >&2; echo 'I am stdout again.'; exit 23; )" [])
+;=>("I am stdout.\nI am stdout again." "I am stderr." 23)
