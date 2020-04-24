@@ -24,6 +24,15 @@ _str_split() {
 
 _fref "str-split" _str_split
 
+_str_pos() {
+  local haystack="${ANON["${1}"]}"; shift
+  local needle="${ANON["${1}"]}"; shift
+  local pos="${haystack%%$needle*}"
+  [[ "$pos" == "$haystack" ]] && _number "-1" || _number "${#pos}"
+}
+
+_fref "str-pos" _str_pos
+
 _env() {
   local key
   local val

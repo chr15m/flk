@@ -6,3 +6,24 @@
 
 (str-replace "goodbye friend" "bye" "/[day]*!#$#")
 ;=>"good/[day]*!#$# friend"
+
+(str-pos "onetwothree" "two")
+;=>3
+
+(str-pos "onetwothree" "one")
+;=>0
+
+(str-pos "onetwothree" "reebo")
+;=>-1
+
+(str-pos "onetwothree" "goober")
+;=>-1
+
+(str-pos "onetwothree" "ones")
+;=>-1
+
+(str-pos "one" "one")
+;=>0
+
+(str-pos "onetwothree" "ree")
+;=>8
