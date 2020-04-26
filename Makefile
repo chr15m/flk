@@ -7,6 +7,7 @@ REVISION=$(shell git rev-parse HEAD | cut -b1-8)
 $(DEST): mal/bash/mal src/*.sh $(INLINES) Makefile
 	cat $< | sed '/then exit/,$$d' > $@
 	cat src/extras.sh >> $@
+	cat src/shell.sh >> $@
 	printf 'read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE\n' >> $@
 	cat $(INLINES) >> $@
 	[ "$(INSERT)" = "" ] || cat $(INSERT) >> $@
@@ -24,6 +25,7 @@ test: flk
 	./mal/runtest.py tests/env.mal ./flk
 	./mal/runtest.py tests/loop.mal ./flk
 	./mal/runtest.py tests/interop.mal ./flk
+	./mal/runtest.py tests/shell.mal ./flk
 
 .PHONY: clean
 

@@ -72,11 +72,18 @@ These functions are hand crafted Fleck specials designed to make common shell sc
  * `(env [KEY] [VALUE])` - Returns a `hash-map` of environment variables. Returns the value of `KEY` if present. Sets the value of `KEY` to `VAL` if the latter is present.
  * `(sh! COMMAND ARGS)` - Run a bash command with arguments. Returns `[stdout stderr return-code]` from the resulting call.
 
+## shell extras
+
+These functions are additional hand crafted Fleck specials designed to make common shell scripting tasks easier.
+
+ * `(sh COMMAND ARGS)` - Run a bash command with arguments in the current shell and return the stdout result.
+
 ## Interop
 
- * `(env [KEY] [VALUE])` - See above section.
- * `(sh! COMMAND [ARGS])` - See above section.
- * `(sh* COMMAND)` - Run arbitrary bash strings and return the stdout result.
+ * `(env [KEY] [VALUE])` - See above "Fleck extras" section.
+ * `(sh COMMAND [ARGS])` - See above "shell extras" section.
+ * `(sh! COMMAND [ARGS])` - See above "Fleck extras" section.
+ * `(sh* COMMAND)` - Run arbitrary bash strings in a subshell and return the stdout result.
 
 For examples of writing your own Fleck functions in Bash see [src/extras.sh](./src/extras.sh).
 Functions should set the special return value `r` and use [mal](https://github.com/kanaka/mal) type casting functions like `_string` to wrap the result in a reference.

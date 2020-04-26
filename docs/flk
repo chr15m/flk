@@ -1508,6 +1508,25 @@ _remove_hashbang() {
 _fref "remove-hashbang" _remove_hashbang
 
 REP "(def! load-file-without-hashbang (fn* (f) (eval (read-string (str \"(do \" (remove-hashbang (slurp f) ) \"\nnil)\")))))"
+_sh() {
+  local args=""
+  local cmd="${ANON["${1}"]}"; shift
+  [ "${1}" != "" ] && args="${ANON["${1}"]}"; shift
+
+  local cmdargs="${cmd}"
+  for _arg in ${args}; do
+    cmdargs="$cmdargs ${ANON["${_arg}"]}";
+  done
+
+  # See answer to "Bash: Assign output of pipe to a variable" by
+  # [Stéphane Chazelas](https://unix.stackexchange.com/a/365228)
+  local output=""
+  { eval "${cmdargs}" > /dev/fd/3 && output=$(cat <&3); } 3<<< ''
+  _string "${output%$'\n'}"
+}
+
+_fref "sh" _sh
+
 read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE
 ;; aliases for common clojure names to mal builtins
 ;; NOTE: this is a hack
@@ -1569,7 +1588,7 @@ read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE
 
 __FLECK__INLINEMALFILE
 REP "(do ${__FLECK__REPCAPTURE})";
-REP "(def! *fleck-revision* \"af692957\")"
+REP "(def! *fleck-revision* \"b87f67d9\")"
 ( return 0 2>/dev/null ) && _fleck_sourced=1 || _fleck_sourced=0
 
 if [ "${_fleck_sourced}" = "0" ]
