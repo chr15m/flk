@@ -100,4 +100,6 @@ _remove_hashbang() {
 
 _fref "remove-hashbang" _remove_hashbang
 
+_fref "last" _last
+
 REP "(def! load-file-without-hashbang (fn* (f) (eval (read-string (str \"(do \" (remove-hashbang (slurp f) ) \"\nnil)\")))))"
