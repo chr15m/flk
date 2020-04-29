@@ -1507,6 +1507,8 @@ _remove_hashbang() {
 
 _fref "remove-hashbang" _remove_hashbang
 
+_fref "last" _last
+
 REP "(def! load-file-without-hashbang (fn* (f) (eval (read-string (str \"(do \" (remove-hashbang (slurp f) ) \"\nnil)\")))))"
 read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE
 ;; aliases for common clojure names to mal builtins
@@ -1569,7 +1571,7 @@ read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE
 
 __FLECK__INLINEMALFILE
 REP "(do ${__FLECK__REPCAPTURE})";
-REP "(def! *fleck-revision* \"af692957\")"
+REP "(def! *fleck-revision* \"68ca1cdc\")"
 ( return 0 2>/dev/null ) && _fleck_sourced=1 || _fleck_sourced=0
 
 if [ "${_fleck_sourced}" = "0" ]
