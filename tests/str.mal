@@ -33,3 +33,6 @@
 
 (str-lower-case "BAR")
 ;=>"bar"
+
+(str-capitalize "foo BAR")
+;=>"Foo bar"
