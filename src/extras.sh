@@ -48,9 +48,9 @@ _str_lower_case() {
 _fref "str-lower-case" _str_lower_case
 
 _str_capitalize() {
-    local s="${ANON["${1}"]}"; shift
-    s="${s,,}"
-    _string "${s^}"
+  local s="${ANON["${1}"]}"; shift
+  s="${s,,}"
+  _string "${s^}"
 }
 
 _fref "str-capitalize" _str_capitalize
