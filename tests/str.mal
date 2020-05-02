@@ -30,3 +30,6 @@
 
 (str-upper-case "foo")
 ;=>"FOO"
+
+(str-lower-case "BAR")
+;=>"bar"

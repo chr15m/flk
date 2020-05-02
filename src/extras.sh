@@ -40,6 +40,13 @@ _str_upper_case() {
 
 _fref "str-upper-case" _str_upper_case
 
+_str_lower_case() {
+  local s="${ANON["${1}"]}"; shift
+  _string "${s,,}"
+}
+
+_fref "str-lower-case" _str_lower_case
+
 _env() {
   local key
   local val

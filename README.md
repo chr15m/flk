@@ -68,7 +68,8 @@ These functions are hand crafted Fleck specials designed to make common shell sc
  * `(str-replace STRING FIND REPLACE)` - Replace all occurrences of the string `FIND` in `STRING` with the string `REPLACE`.
  * `(str-split STRING SPLIT-CHARACTER)` - Split `STRING` into a list of strings on the single characters `SPLIT-CHARACTER`.
  * `(str-pos HAYSTACK NEEDLE)` - Returns the position of string `NEEDLE` in string `HAYSTACK` or -1 if not found.
- * `(str-upper-case STRING)` - Converts string to all upper-case. 
+ * `(str-upper-case STRING)` - Converts string to all upper-case.
+ * `(str-lower-case STRING)` - Converts string to all lower-case.
  * `(dc OPERATOR ARRAY-OF-NUMBERS)` - Wraps the `dc` command to do decimal math. E.g. `(dc '+ [1 2 3])` yeilds `6`.
  * `(env [KEY] [VALUE])` - Returns a `hash-map` of environment variables. Returns the value of `KEY` if present. Sets the value of `KEY` to `VAL` if the latter is present.
  * `(sh! COMMAND ARGS)` - Run a bash command with arguments. Returns `[stdout stderr return-code]` from the resulting call.
