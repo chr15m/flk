@@ -4,7 +4,7 @@ INLINES=$(foreach f,$(EXTRAMALS),mal/lib/$(f) ) $(foreach f,$(LOCALMALS),src/$(f
 DEST?=flk
 REVISION=$(shell git rev-parse HEAD | cut -b1-8)
 
-$(DEST): mal/bash/mal src/*.sh $(INLINES) Makefile
+$(DEST): mal/impls/bash/mal src/*.sh $(INLINES) Makefile
 	cat $< | sed '/then exit/,$$d' > $@
 	cat src/extras.sh >> $@
 	printf 'read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE\n' >> $@
@@ -15,8 +15,8 @@ $(DEST): mal/bash/mal src/*.sh $(INLINES) Makefile
 	if [ "$(NOREPL)" = "" ]; then cat src/file-repl.sh; fi >> $@
 	chmod 755 $@
 
-mal/bash/mal:
-	cd mal/bash && make mal
+mal/impls/bash/mal:
+	cd mal/impls/bash && make mal
 
 test: flk
 	./mal/runtest.py tests/str.mal ./flk
