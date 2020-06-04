@@ -9,7 +9,7 @@ $(DEST): mal/impls/bash/mal src/*.sh $(INLINES) Makefile
 	cat src/extras.sh >> $@
 	printf 'read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE\n' >> $@
 	cat $(INLINES) >> $@
-	[ "$(INSERT)" = "" ] || cat $(INSERT) >> $@
+	[ "$(INSERT)" = "" ] || grep -Ev '^\s*$|^\s*\#\!' $(INSERT) >> $@
 	printf '\n__FLECK__INLINEMALFILE\nREP "(do $${__FLECK__REPCAPTURE})";\n' >> $@
 	printf 'REP "(def! *fleck-revision* \\"$(REVISION)\\")"\n' >> $@
 	if [ "$(NOREPL)" = "" ]; then cat src/file-repl.sh; fi >> $@
