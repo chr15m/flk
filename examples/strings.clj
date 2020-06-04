@@ -8,3 +8,8 @@
 
 (println "replace:" (pr-str (str-replace "hello goodbye fufwf yes" "bye" "/[day]*!#$#")))
 
+(println "str-upper-case:" (pr-str (str-upper-case "foo")))
+
+(println "str-lower-case:" (pr-str (str-lower-case "BAR")))
+
+(println "str-capitalize:" (pr-str (str-capitalize "foo BAR")))

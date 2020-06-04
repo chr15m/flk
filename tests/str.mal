@@ -27,3 +27,12 @@
 
 (str-pos "onetwothree" "ree")
 ;=>8
+
+(str-upper-case "foo")
+;=>"FOO"
+
+(str-lower-case "BAR")
+;=>"bar"
+
+(str-capitalize "foo BAR")
+;=>"Foo bar"
