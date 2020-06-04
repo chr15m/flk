@@ -70,14 +70,14 @@ These functions are hand crafted Fleck specials designed to make common shell sc
  * `(str-pos HAYSTACK NEEDLE)` - Returns the position of string `NEEDLE` in string `HAYSTACK` or -1 if not found.
  * `(dc OPERATOR ARRAY-OF-NUMBERS)` - Wraps the `dc` command to do decimal math. E.g. `(dc '+ [1 2 3])` yeilds `6`.
  * `(env [KEY] [VALUE])` - Returns a `hash-map` of environment variables. Returns the value of `KEY` if present. Sets the value of `KEY` to `VAL` if the latter is present.
- * `(sh COMMAND ARGS)` - Run a bash command with arguments in the current shell and return the stdout result.
  * `(sh! COMMAND ARGS)` - Run a bash command with arguments in a subshell. Returns `[stdout stderr return-code]` from the resulting call.
+ * `(sh-env COMMAND)` - Run a bash command string in the current shell, modifying current env, and return the stdout result (useful for `export`, `source` etc.).
 
 ## Interop
 
  * `(env [KEY] [VALUE])` - See above section.
- * `(sh COMMAND [ARGS])` - See above section.
  * `(sh! COMMAND [ARGS])` - See above section.
+ * `(sh-env COMMAND)` - See above section.
  * `(sh* COMMAND)` - Run arbitrary bash strings in a subshell and return the stdout result.
 
 For examples of writing your own Fleck functions in Bash see [src/extras.sh](./src/extras.sh).

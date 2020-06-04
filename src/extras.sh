@@ -61,7 +61,7 @@ _env() {
 
 _fref "env" _env
 
-_sh() {
+_sh_env() {
   local args=""
   local cmd="${ANON["${1}"]}"; shift
   [ "${1}" != "" ] && args="${ANON["${1}"]}"; shift
@@ -78,7 +78,7 @@ _sh() {
   _string "${output%$'\n'}"
 }
 
-_fref "sh" _sh
+_fref "sh-env" _sh_env
 
 _sh_BANG() {
   local args=""

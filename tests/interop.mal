@@ -10,7 +10,7 @@
 ;=>nil
 
 ;; Set TEST_SHELL_SH in current shell process
-(sh "export TEST_SHELL_SH=SUCCESS")
+(sh-env "export TEST_SHELL_SH=SUCCESS")
 ;=>""
 
 (env 'TEST_SHELL_SH)
