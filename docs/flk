@@ -54,8 +54,8 @@ _obj_type () {
         func) r="function" ;;
         strn)
             local s="${ANON["${1}"]}"
-            if [[ "${1:0:1}" = "${__keyw}" ]] \
-                || [[ "${1:0:2}" = "${__keyw}" ]]; then
+            if [[ "${s:0:1}" = "${__keyw}" ]] \
+                || [[ "${s:0:2}" = "${__keyw}" ]]; then
                 r="keyword"
             else
                 r="string"
@@ -364,6 +364,93 @@ _map () {
     _map_with_type _list "${@}"
 }
 
+_filter_with_type () {
+    local constructor="${1}"; shift
+    local f="${1}"; shift
+    local items="${ANON["${1}"]}"; shift
+    eval "${constructor}"; local new_seq="${r}"
+    for v in ${items}; do
+        # echo eval ${f%%@*} "${v}" "${@}"
+        i="${v}"
+        eval ${f%%@*} "${v}" "${@}"
+        [[ "${__ERROR}" ]] && r= && return 1
+        _obj_type "${r}"
+        if [[ "${r}" == "true" ]]; then
+            _conj! "${new_seq}" "${i}"
+        fi
+    done
+    r="${new_seq}"
+}
+
+_filter () {
+    _filter_with_type _list "${@}"
+}
+
+_pmap_with_type () {
+    local constructor="${1}"; shift
+    local f="${1}"; shift
+    local items="${ANON["${1}"]}"; shift
+
+    # core count
+    local cores=1
+    if [[ -z "$FLK_MAX_THREADS" ]]; then
+        while read -r line; do
+            if [[ "$line" =~ "processor" ]]; then
+                ((cores++))
+            fi
+        done < "/proc/cpuinfo"
+    else
+        cores="$FLK_MAX_THREADS"
+    fi
+
+    # create id for shared memory
+    time_ms; local pmap_id="${ANON["${r}"]}"
+
+    eval "${constructor}"; local new_seq="${r}"
+
+    local index=0
+    for v in ${items}; do        
+        (
+            eval ${f%%@*} "${v}" "${@}" 
+            [[ "${__ERROR}" ]] && r= && return 1;
+
+            pr_str "${r}"
+            echo -n "${ANON["${r}"]}" > "/dev/shm/_flk_pmap_${pmap_id}_${index}"
+        ) &
+
+        ((index++))
+        
+        # thread control core number + 1
+        local j=( $(jobs -r -p) )
+        if [[ "${#j[@]}" -gt $cores ]]; then
+            wait -n
+        fi
+    done
+
+    # wait for inital threads
+    wait
+
+    index=0
+    for v in ${items}; do
+        READ_STR "$(</dev/shm/_flk_pmap_${pmap_id}_${index})" && unlink "/dev/shm/_flk_pmap_${pmap_id}_${index}" > /dev/null 2>&1
+        _conj! "${new_seq}" "${r}";
+        ((index++))
+    done
+
+    if [[ -x $(command -v stty) ]]
+    then
+        stty sane
+    else
+        echo -e "Warning: command stty not found, terminal screen can be messed up after script done.">&2
+    fi
+    
+    r="${new_seq}"
+}
+
+_pmap () {
+    _pmap_with_type _list "${@}"
+}
+
 fi
 #
 # mal (Make Lisp) Parser/Reader
@@ -476,6 +563,12 @@ TOKENIZE () {
     local idx=0
     local chunk=0
     local chunksz=500
+
+    if ((datalen>500))
+    then
+        chunksz=$datalen
+    fi
+    
     local token=
     local str=
 
@@ -808,7 +901,14 @@ prn () {
 println () {
     local res=""
     for x in "${@}"; do _pr_str "${x}"; res="${res} ${r}"; done
-    echo "${res:1}"
+    echo -e "${res:1}"
+    r="${__nil}";
+}
+
+println_stderr () {
+    local res=""
+    for x in "${@}"; do _pr_str "${x}"; res="${res} ${r}"; done
+    echo -e "${res:1}" >&2
     r="${__nil}";
 }
 
@@ -976,6 +1076,18 @@ map () {
     _map "${f}" "${@}"
 }
 
+filter () {
+    local f="${ANON["${1}"]}"; shift
+    #echo _filter "${f}" "${@}"
+    _filter "${f}" "${@}"
+}
+
+pmap () {
+    local f="${ANON["${1}"]}"; shift
+    #echo _map "${f}" "${@}"
+    _pmap "${f}" "${@}"
+}
+
 conj () {
     local obj="${1}"; shift
     local obj_data="${ANON["${obj}"]}"
@@ -1059,7 +1171,17 @@ swap_BANG () {
     ANON["${atm}"]="${r}"
 }
 
+exit_BANG () {
+    local exit_code="${ANON["${1}"]}"; shift
+    exit "$exit_code"
+}
 
+trap_BANG() {
+    local _trap="${ANON["${1}"]}"; shift
+    local _action="${ANON["${1}"]}"; shift
+    # > /dev/null 2>&1
+    trap "${_trap} > /dev/null 2>&1" "$_action"
+}
 
 # Namespace of core functions
 
@@ -1083,6 +1205,7 @@ declare -A core_ns=(
     [str]=str
     [prn]=prn
     [println]=println
+    [println-stderr]=println_stderr
     [readline]=readline
     [read-string]=read_string
     [slurp]=slurp
@@ -1119,6 +1242,8 @@ declare -A core_ns=(
     [count]=count
     [apply]=apply
     [map]=map
+    [filter]=filter
+    [pmap]=pmap
 
     [conj]=conj
     [seq]=seq
@@ -1129,7 +1254,9 @@ declare -A core_ns=(
     [atom?]=atom?
     [deref]=deref
     [reset!]=reset_BANG
-    [swap!]=swap_BANG)
+    [swap!]=swap_BANG
+    [exit!]=exit_BANG
+    [trap!]=trap_BANG)
 
 fi
 #!/usr/bin/env bash
@@ -1490,6 +1617,19 @@ _env() {
 
 _fref "env" _env
 
+_unset() {
+    local key
+    [ "${1}" != "" ] && key="${ANON["${1}"]}"; shift
+
+    if [ "${key}" != "" ]
+    then
+        unset "${key}"
+    fi
+    r="${__nil}"
+}
+
+_fref "unset" _unset
+
 _sh_env() {
   local args=""
   local cmd="${ANON["${1}"]}"; shift
@@ -1549,6 +1689,134 @@ _remove_hashbang() {
 _fref "remove-hashbang" _remove_hashbang
 
 _fref "last" _last
+
+_str_join () {
+    local separator="${ANON["${1}"]}"; shift
+    local res="${ANON["${1}"]}"; shift
+    for x in "${@}"; do _pr_str "${x}"; res="${res}${separator}${r}"; done
+    _string "${res}"
+}
+
+_fref "str-join" _str_join
+
+_str_subs () {
+    local end=""
+    local s="${ANON["${1}"]}"; shift
+    local start="${ANON["${1}"]}"; shift
+    [ "${1}" != "" ] && end="${ANON["${1}"]}"; shift
+
+    if [ "${end}" != "" ]
+    then
+        _string "${s:${start}:${end}}"
+    else
+        _string "${s:${start}}"
+    fi
+}
+
+_fref "str-subs" _str_subs
+
+_range () {
+    local start=0
+    local end=0
+    local step=1
+
+    end="${ANON["${1}"]}"; shift
+    if [ "${1}" != "" ]
+    then
+        start="$end"
+        end="${ANON["${1}"]}"; shift
+        [ "${1}" != "" ] && step="${ANON["${1}"]}"; shift
+    fi
+
+    _list
+    local newlist="${r}"
+
+    if ((step>=0))
+    then
+        for ((i=start;i<end;i+=step)); do
+            _number "$i"
+            _conj! "${newlist}" "${r}"
+        done
+    else
+        for ((i=start;i>end;i+=step)); do
+            _number "$i"
+            _conj! "${newlist}" "${r}"
+        done
+    fi
+
+    r="${newlist}"
+}
+
+_fref "range" _range
+
+_str_indent () {
+    local s=""
+    local t=2
+
+    spaces=""
+
+    s="${ANON["${1}"]}"; shift
+    [ "${1}" != "" ] && t="${ANON["${1}"]}"; shift
+
+    for ((x = 0; x < t; x++)); do
+        spaces+=" "
+    done
+
+    if [[ -x $(command -v sed) ]]
+    then
+        _string "$(sed "s/^/$spaces/" <<<$s)"
+    else
+        _string "${spaces}${s}"
+    fi
+}
+
+_fref "str-indent" _str_indent
+
+_mod () {
+    local a="${ANON["${1}"]}"; shift
+    local b="${ANON["${1}"]}"; shift
+    local rest="$((a % b))"
+
+    _number "$rest"
+}
+
+_fref "mod" _mod
+
+_file_exists () {
+    local f="${ANON["${1}"]}"; shift
+
+    if [ -f "$f" ]; then
+        r="${__true}"
+    else
+        r="${__false}"
+    fi
+}
+
+_fref "file-exists?" _file_exists
+
+_file_write () {
+    local a="${__false}"
+    local f="${ANON["${1}"]}"; shift
+    local c="${ANON["${1}"]}"; shift
+    [ "${1}" != "" ] && a="${1}"; shift
+
+    if [ "${a}" == "${__true}" ]; then
+        echo -n "${c}" >> "${f}"
+    else
+        echo -n "${c}" > "${f}"
+    fi
+    r="${__nil}"
+}
+
+_fref "file-write" _file_write
+
+_unlink () {
+    local f="${ANON["${1}"]}"; shift
+    unlink "${f}"
+    r="${__nil}"
+}
+
+_fref "unlink" _unlink
 
 REP "(def! load-file-without-hashbang (fn* (f) (eval (read-string (str \"(do \" (remove-hashbang (slurp f) ) \"\nnil)\")))))"
 read -d "" __FLECK__REPCAPTURE << __FLECK__INLINEMALFILE
