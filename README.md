@@ -12,7 +12,7 @@ curl -s https://chr15m.github.io/flk/flk > flk && chmod 755 flk
 ./flk
 ```
 
-### [Examples](./examples) | [Reference](#reference) | [FAQ](#faq) | [make-a-lisp](https://github.com/kanaka/mal)
+### [Examples](./examples) | [Reference](#reference) | [Contributing](#contributing) | [FAQ](#faq) | [make-a-lisp](https://github.com/kanaka/mal)
 
 # What?
 
@@ -101,6 +101,18 @@ make DEST=wow INSERT=./wow.clj NOREPL=1
 This will produce a new standalone script called `wow` with Fleck + `wow.clj` bundled together.
 
 When you run `wow` the embedded `wow.clj` will be run by the embedded Fleck.
+
+# Contributing
+
+Flk is built from the [mal](https://github.com/kanaka/mal) sources and uses its test framework.
+
+To contribute please follow these guidelines:
+
+ * Add any new bash functions to [extras.sh](./src/extras.sh) as this is merged into `mal` at build time.
+ * Add new flk functions into `src` in a new `.clj` file, and then add the file name to the `LOCALMALS` list in the [Makefile](./Makefile) so it gets included in the build.
+ * Any changes, bugfixes, etc. to `mal` itself should be submitted upstream.
+ * Document any new functions in this README.
+ * Put unit tests for new functions in a `.mal` file in the `tests` folder, and to the [Makefile](./Makefile) `test` clause.
 
 # FAQ
 
