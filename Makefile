@@ -1,7 +1,7 @@
 EXTRAMALS=alias-hacks.mal trivial.mal
 LOCALMALS=math.clj reducers.clj
 INLINES=$(foreach f,$(EXTRAMALS),mal/lib/$(f) ) $(foreach f,$(LOCALMALS),src/$(f) )
-DEST?=flk
+DEST?=docs/flk
 REVISION=$(shell git rev-parse HEAD | cut -b1-8)
 
 $(DEST): mal/impls/bash/mal src/*.sh $(INLINES) Makefile
