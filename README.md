@@ -90,6 +90,8 @@ Use `_fref` to make your function available to the Fleck namespace e.g. `_fref "
 
 # Compile
 
+To compile `flk` itself run `make`. This combines the original `mal` scripts with various bash and flk functions into a single binary.
+
 You can make a pure bash script from your Fleck script by bundling your script and Fleck together into a new script.
 
 Say you have a Fleck script called `wow.clj`, you can bundle it as follows:
