@@ -5,6 +5,13 @@
 
 <p align="center"><img src="docs/screencast.svg?sanitize=true" alt="Fleck screencast"></p>
 
+# Note
+
+This project is experimental and I am no longer actively working on it.
+If you need a feature or bug fixed, please send a PR with passing tests and I will review and merge it.
+
+Thank you.
+
 # Get it
 
 ```shell
